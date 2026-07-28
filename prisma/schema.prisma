@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Card {
+  id       String  @id @default(uuid())
+  name     String
+  setName  String
+  rarity   String?
+  imageUrl String?
+
+  chaseItems ChaseItem[]
+
+  createdAt DateTime @default(now())
+}
+
+model User {
+  id       String @id @default(uuid())
+  email    String @unique
+  username String
+
+  chaseItems ChaseItem[]
+  offers     Offer[]
+
+  createdAt DateTime @default(now())
+}
+
+model ChaseItem {
+  id String @id @default(uuid())
+
+  userId String
+  cardId String
+
+  status String @default("OPEN")
+
+  user User @relation(fields: [userId], references: [id])
+  card Card @relation(fields: [cardId], references: [id])
+
+  offers Offer[]
+
+  createdAt DateTime @default(now())
+}
+
+model Offer {
+  id String @id @default(uuid())
+
+  sellerId    String
+  chaseItemId String
+
+  price     Float
+  condition String
+  message   String?
+
+  seller    User      @relation(fields: [sellerId], references: [id])
+  chaseItem ChaseItem @relation(fields: [chaseItemId], references: [id], onDelete: Cascade)
+
+  status String @default("PENDING")
+
+  createdAt DateTime @default(now())
+}
