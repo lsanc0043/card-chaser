@@ -1,6 +1,6 @@
 import CardSearch from "@/components/card-search";
 import prisma from "@/lib/prisma";
-import Link from "next/link";
+import CardDisplay from "@/components/card-display";
 
 export default async function SearchPage({
   searchParams,
@@ -21,34 +21,38 @@ export default async function SearchPage({
     orderBy: {
       name: "asc",
     },
+    include: {
+      set: true,
+      tcg: true,
+      image: true,
+    },
   });
 
   return (
     <main
       style={{
-        padding: "32px",
-        maxWidth: "1024px",
-        margin: "0 auto",
+        padding: "10px 20px",
       }}
     >
       <h1
         style={{
           fontSize: "32px",
           fontWeight: 700,
-          marginBottom: "24px",
+          marginBottom: "10px",
         }}
       >
         Search Cards
       </h1>
 
-      <CardSearch />
+      <div style={{ marginBottom: "10px" }}>
+        <CardSearch />
+      </div>
 
       {query && (
         <p
           style={{
             color: "#6b7280",
-            marginTop: "24px",
-            marginBottom: "16px",
+            margin: "10px",
           }}
         >
           {`Showing ${cards.length} result${cards.length !== 1 ? "s" : ""} for "${query}"`}
@@ -62,37 +66,14 @@ export default async function SearchPage({
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fill, 220px)",
               gap: "24px",
+              justifyContent: "start",
             }}
           >
-            {cards.map((card) => (
-              <Link
-                key={card.id}
-                href={`/cards/${card.id}`}
-                className="hover:shadow-lg transition-shadow"
-                style={{
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "8px",
-                  padding: "16px",
-                  textDecoration: "none",
-                  color: "inherit",
-                }}
-              >
-                <h2
-                  style={{
-                    fontWeight: 700,
-                    marginBottom: "8px",
-                  }}
-                >
-                  {card.name}
-                </h2>
-
-                <p>{card.setName}</p>
-
-                <p>{card.rarity}</p>
-              </Link>
-            ))}
+            {cards.map((card) => {
+              return <CardDisplay card={card} key={card.id} />;
+            })}
           </div>
         )}
       </div>

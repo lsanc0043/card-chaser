@@ -2,6 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 
 export async function addToChase(cardId: string, redirectUrl: string) {
@@ -37,32 +38,21 @@ export async function addToChase(cardId: string, redirectUrl: string) {
     });
   }
 
-  redirect("/chase");
+  revalidatePath(`/cards/${cardId}`);
 }
 
-export async function removeFromChase(chaseItemId: string) {
+export async function removeFromChase(chaseItemId: string, cardId: string) {
   const { userId } = await auth();
 
   if (!userId) {
     redirect("/sign-in");
   }
 
-  const user = await prisma.user.findUnique({
-    where: {
-      clerkId: userId,
-    },
-  });
-
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  await prisma.chaseItem.deleteMany({
+  await prisma.chaseItem.delete({
     where: {
       id: chaseItemId,
-      userId: user.id,
     },
   });
 
-  redirect("/chase");
+  revalidatePath(`/cards/${cardId}`);
 }

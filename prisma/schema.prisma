@@ -8,15 +8,71 @@ datasource db {
 }
 
 model Card {
-  id       String  @id @default(uuid())
-  name     String
-  setName  String
-  rarity   String?
-  imageUrl String?
+  id String @id @default(uuid())
+
+  // API identifiers
+  externalId Int @unique
+
+  name String
+  type String?
+
+  // API attributes JSON
+  attributes Json
+  markets    Json?
+
+  tcgId String
+  setId String
+
+  tcg Tcg @relation(fields: [tcgId], references: [id])
+  set Set @relation(fields: [setId], references: [id])
+
+  image CardImage?
 
   chaseItems ChaseItem[]
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Tcg {
+  id String @id @default(uuid())
+
+  externalId  String  @unique
+  name        String
+  description String?
+
+  cards Card[]
+  sets  Set[]
+
+  createdAt DateTime @default(now())
+}
+
+model Set {
+  id String @id @default(uuid())
+
+  externalId  String    @unique
+  name        String
+  code        String?
+  slug        String?
+  releaseDate DateTime?
+
+  tcgId String
+  tcg   Tcg    @relation(fields: [tcgId], references: [id])
+
+  cards Card[]
+
+  createdAt DateTime @default(now())
+}
+
+model CardImage {
+  id String @id @default(uuid())
+
+  small  String?
+  medium String?
+  large  String?
+
+  cardId String @unique
+  card   Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
 }
 
 model User {

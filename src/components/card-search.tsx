@@ -6,8 +6,12 @@ import Link from "next/link";
 type Card = {
   id: string;
   name: string;
-  setName: string;
-  rarity: string | null;
+  set: {
+    name: string;
+  } | null;
+  attributes: {
+    rarity: string | null;
+  };
 };
 
 export default function CardSearch() {
@@ -25,6 +29,7 @@ export default function CardSearch() {
     const response = await fetch(`/api/cards/search?q=${value}`);
     const data = await response.json();
 
+    console.log("Search results:", data); // Log the search results for debugging
     setResults(data);
   }
 
@@ -82,7 +87,8 @@ export default function CardSearch() {
               <div className="font-semibold">{card.name}</div>
 
               <div className="text-sm text-gray-500">
-                {card.setName} · {card.rarity}
+                {card.set?.name || "Unknown Set"} ·{" "}
+                {card.attributes?.rarity || "Unknown Rarity"}
               </div>
             </Link>
           ))}

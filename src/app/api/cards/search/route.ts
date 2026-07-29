@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-
   const query = searchParams.get("q");
 
   if (!query) {
@@ -17,11 +16,30 @@ export async function GET(request: Request) {
         mode: "insensitive",
       },
     },
-    take: 8,
-    orderBy: {
-      name: "asc",
+    include: {
+      set: true,
     },
+    take: 10,
   });
 
-  return NextResponse.json(cards);
+  const results = cards.map((card) => {
+    const attributes = card.attributes as {
+      Rarity?: string;
+    };
+
+    return {
+      id: card.id,
+      name: card.name,
+      set: card.set
+        ? {
+            name: card.set.name,
+          }
+        : null,
+      attributes: {
+        rarity: attributes.Rarity ?? null,
+      },
+    };
+  });
+
+  return NextResponse.json(results);
 }
