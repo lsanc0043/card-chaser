@@ -1,12 +1,19 @@
 "use server";
 
+import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 
-export async function addToChase(cardId: string) {
+export async function addToChase(cardId: string, redirectUrl: string) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    redirect("/sign-in?redirect_url=" + encodeURIComponent(redirectUrl));
+  }
+
   const user = await prisma.user.findUnique({
     where: {
-      email: "buyer@example.com",
+      clerkId: userId,
     },
   });
 
@@ -34,9 +41,28 @@ export async function addToChase(cardId: string) {
 }
 
 export async function removeFromChase(chaseItemId: string) {
-  await prisma.chaseItem.delete({
+  const { userId } = await auth();
+
+  if (!userId) {
+    redirect("/sign-in");
+  }
+
+  const user = await prisma.user.findUnique({
     where: {
-      id: chaseItemId,
+      clerkId: userId,
     },
   });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  await prisma.chaseItem.deleteMany({
+    where: {
+      id: chaseItemId,
+      userId: user.id,
+    },
+  });
+
+  redirect("/chase");
 }

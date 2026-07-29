@@ -54,3 +54,6 @@ postgres_data/
 
 # AI tooling
 skills-lock.json
+
+# clerk configuration (can include secrets)
+/.clerk/

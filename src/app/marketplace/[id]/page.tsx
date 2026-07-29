@@ -22,10 +22,31 @@ export default async function OfferPage({
   }
 
   return (
-    <main className="p-8 max-w-xl mx-auto">
-      <h1 className="text-3xl font-bold">Make Offer</h1>
+    <main
+      style={{
+        padding: "32px",
+        maxWidth: "640px",
+        margin: "0 auto",
+      }}
+    >
+      <h1
+        style={{
+          fontSize: "32px",
+          fontWeight: 700,
+          marginBottom: "16px",
+        }}
+      >
+        Make Offer
+      </h1>
 
-      <p className="mt-4">Card: {chaseItem.card.name}</p>
+      <p
+        style={{
+          marginTop: "16px",
+          fontSize: "16px",
+        }}
+      >
+        Card: {chaseItem.card.name}
+      </p>
 
       <OfferForm chaseItemId={id} />
     </main>

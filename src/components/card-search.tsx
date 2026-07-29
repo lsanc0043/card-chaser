@@ -23,28 +23,57 @@ export default function CardSearch() {
     }
 
     const response = await fetch(`/api/cards/search?q=${value}`);
-
     const data = await response.json();
 
     setResults(data);
   }
 
   return (
-    <div className="relative">
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        maxWidth: "500px",
+      }}
+    >
       <input
         value={query}
         onChange={(e) => handleSearch(e.target.value)}
         placeholder="Search cards..."
-        className="border rounded px-4 py-2 w-full"
+        style={{
+          width: "100%",
+          border: "1px solid #d1d5db",
+          borderRadius: "8px",
+          padding: "10px 16px",
+          fontSize: "16px",
+          outline: "none",
+        }}
       />
 
       {results.length > 0 && (
-        <div className="absolute top-full left-0 right-0 bg-white border rounded shadow mt-1 z-10">
+        <div
+          style={{
+            position: "absolute",
+            top: "calc(100% + 4px)",
+            left: 0,
+            right: 0,
+            backgroundColor: "white",
+            border: "1px solid #d1d5db",
+            borderRadius: "8px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            zIndex: 10,
+            overflow: "hidden",
+          }}
+        >
           {results.map((card) => (
             <Link
               key={card.id}
               href={`/cards/${card.id}`}
-              className="block p-3 hover:bg-gray-100"
+              className="block p-3 hover:bg-gray-100 transition-colors"
+              style={{
+                textDecoration: "none",
+                color: "inherit",
+              }}
               onClick={() => {
                 setResults([]);
                 setQuery("");
@@ -60,13 +89,17 @@ export default function CardSearch() {
 
           <Link
             href={`/search?q=${query}`}
-            className="block p-3 border-t font-semibold hover:bg-gray-100"
+            className="block p-3 border-t font-semibold hover:bg-gray-100 transition-colors"
+            style={{
+              textDecoration: "none",
+              color: "inherit",
+            }}
             onClick={() => {
               setResults([]);
               setQuery("");
             }}
           >
-            {`View all results for ${query}`}
+            {`View all results for "${query}"`}
           </Link>
         </div>
       )}
