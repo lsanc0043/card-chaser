@@ -1,7 +1,7 @@
 import AuthRequiredModal from "@/components/auth-required-modal";
+import CardDisplay from "@/components/card-display";
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import Link from "next/link";
 
 export default async function MarketplacePage() {
   const { userId } = await auth();
@@ -38,7 +38,12 @@ export default async function MarketplacePage() {
       },
     },
     include: {
-      card: true,
+      card: {
+        include: {
+          set: true,
+          image: true,
+        },
+      },
       user: true,
     },
   });
@@ -46,16 +51,14 @@ export default async function MarketplacePage() {
   return (
     <main
       style={{
-        padding: "32px",
-        maxWidth: "1024px",
-        margin: "0 auto",
+        padding: "10px 20px",
       }}
     >
       <h1
         style={{
           fontSize: "32px",
           fontWeight: 700,
-          marginBottom: "24px",
+          marginBottom: "10px",
         }}
       >
         Open Chase Requests
@@ -63,59 +66,23 @@ export default async function MarketplacePage() {
 
       <div
         style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "16px",
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, 220px)",
+          gap: "24px",
+          justifyContent: "start",
         }}
       >
-        {requests.map((request) => (
-          <div
-            key={request.id}
-            style={{
-              border: "1px solid #e5e7eb",
-              borderRadius: "8px",
-              padding: "20px",
-            }}
-          >
-            <h2
-              style={{
-                fontSize: "20px",
-                fontWeight: 600,
-                marginBottom: "8px",
-              }}
-            >
-              {request.card.name}
-            </h2>
-
-            <p>Set: {request.card.setName}</p>
-
-            <p>Rarity: {request.card.rarity}</p>
-
-            <p
-              style={{
-                marginTop: "8px",
-              }}
-            >
-              Wanted by: {request.user.displayName || request.user.username}
-            </p>
-
-            <Link
-              href={`/marketplace/${request.id}`}
-              className="hover:bg-gray-100 transition-colors"
-              style={{
-                display: "inline-block",
-                marginTop: "16px",
-                border: "1px solid #d1d5db",
-                padding: "8px 16px",
-                borderRadius: "6px",
-                textDecoration: "none",
-                color: "inherit",
-              }}
-            >
-              Make Offer
-            </Link>
-          </div>
-        ))}
+        {requests.map((request) => {
+          return (
+            <CardDisplay
+              card={request.card}
+              isMarketplaceCard={true}
+              wantedByUserId={request.user.username}
+              requestId={request.id}
+              key={request.id}
+            />
+          );
+        })}
       </div>
     </main>
   );

@@ -1,11 +1,7 @@
 import prisma from "@/lib/prisma";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import RemoveChaseButton from "@/components/remove-chase-button";
-import { cardConditions } from "@/constants/cardConditions";
 import { auth } from "@clerk/nextjs/server";
 import AuthRequiredModal from "@/components/auth-required-modal";
+import CardDisplay from "@/components/card-display";
 
 export default async function ChasePage() {
   const { userId } = await auth();
@@ -14,8 +10,7 @@ export default async function ChasePage() {
     return (
       <main
         style={{
-          minHeight: "100vh",
-          padding: "32px",
+          padding: "10px 20px",
         }}
       >
         <h1
@@ -39,7 +34,12 @@ export default async function ChasePage() {
       },
     },
     include: {
-      card: true,
+      card: {
+        include: {
+          set: true,
+          image: true,
+        },
+      },
       offers: {
         include: {
           seller: true,
@@ -51,16 +51,14 @@ export default async function ChasePage() {
   return (
     <main
       style={{
-        padding: "32px",
-        maxWidth: "1024px",
-        margin: "0 auto",
+        padding: "10px 20px",
       }}
     >
       <h1
         style={{
           fontSize: "32px",
           fontWeight: 700,
-          marginBottom: "32px",
+          marginBottom: "10px",
         }}
       >
         My Chase List
@@ -69,94 +67,21 @@ export default async function ChasePage() {
       <div
         style={{
           display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, 220px)",
           gap: "24px",
+          justifyContent: "start",
         }}
       >
-        {chaseItems.map((item) => (
-          <Card key={item.id}>
-            <CardHeader>
-              <CardTitle>{item.card.name}</CardTitle>
-
-              <div
-                style={{
-                  display: "flex",
-                  gap: "8px",
-                  alignItems: "center",
-                }}
-              >
-                <Badge>{item.card.setName}</Badge>
-
-                <Badge variant="secondary">{item.card.rarity}</Badge>
-              </div>
-            </CardHeader>
-
-            <CardContent>
-              <h3
-                style={{
-                  fontWeight: 600,
-                  marginBottom: "12px",
-                }}
-              >
-                Seller Offers
-              </h3>
-
-              {item.offers.length === 0 ? (
-                <p
-                  style={{
-                    color: "#6b7280",
-                  }}
-                >
-                  No offers yet.
-                </p>
-              ) : (
-                item.offers.map((offer) => (
-                  <div
-                    key={offer.id}
-                    style={{
-                      border: "1px solid #e5e7eb",
-                      borderRadius: "8px",
-                      padding: "16px",
-                      marginBottom: "12px",
-                    }}
-                  >
-                    <p>
-                      Seller:{" "}
-                      {offer.seller.displayName || offer.seller.username}
-                    </p>
-
-                    <p>Price: ${offer.price}</p>
-
-                    <p>
-                      Condition:{" "}
-                      {
-                        cardConditions.find((c) => c.value === offer.condition)
-                          ?.label
-                      }
-                    </p>
-
-                    <p
-                      style={{
-                        marginTop: "8px",
-                      }}
-                    >
-                      {offer.message}
-                    </p>
-
-                    <Button
-                      style={{
-                        marginTop: "16px",
-                      }}
-                    >
-                      Review Offer
-                    </Button>
-                  </div>
-                ))
-              )}
-            </CardContent>
-
-            <RemoveChaseButton chaseItemId={item.id} />
-          </Card>
-        ))}
+        {chaseItems.map((item) => {
+          return (
+            <CardDisplay
+              card={item.card}
+              showRemoveChase={true}
+              chaseItemId={item.id}
+              key={item.id}
+            />
+          );
+        })}
       </div>
     </main>
   );
