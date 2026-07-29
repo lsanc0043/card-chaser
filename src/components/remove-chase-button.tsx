@@ -15,7 +15,17 @@ export default function RemoveChaseButton({
   return (
     <button
       onClick={handleRemove}
-      className="border border-red-500 text-red-500 px-4 py-2 rounded"
+      className="hover:bg-red-50 transition-colors"
+      style={{
+        border: "1px solid #ef4444",
+        color: "#ef4444",
+        padding: "8px 16px",
+        borderRadius: "6px",
+        cursor: "pointer",
+        backgroundColor: "white",
+        fontSize: "14px",
+        fontWeight: 500,
+      }}
     >
       Remove from Chase List
     </button>

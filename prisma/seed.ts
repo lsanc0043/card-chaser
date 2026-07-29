@@ -1,3 +1,4 @@
+// npx prisma migrate reset
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -7,22 +8,6 @@ async function main() {
   await prisma.offer.deleteMany();
   await prisma.chaseItem.deleteMany();
   await prisma.card.deleteMany();
-  await prisma.user.deleteMany();
-
-  // Create users
-  const buyer = await prisma.user.create({
-    data: {
-      email: "buyer@example.com",
-      username: "cardhunter",
-    },
-  });
-
-  const seller = await prisma.user.create({
-    data: {
-      email: "seller@example.com",
-      username: "pokemaster",
-    },
-  });
 
   // Create cards
   const charizard = await prisma.card.create({
