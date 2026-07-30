@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import OfferForm from "./offer-form";
+import { notFound } from "next/navigation";
 
 export default async function OfferPage({
   params,
@@ -8,17 +9,22 @@ export default async function OfferPage({
 }) {
   const { id } = await params;
 
-  const chaseItem = await prisma.chaseItem.findUnique({
+  const request = await prisma.chaseRequest.findUnique({
     where: {
       id,
     },
     include: {
-      card: true,
+      chaseItem: {
+        include: {
+          card: true,
+          user: true,
+        },
+      },
     },
   });
 
-  if (!chaseItem) {
-    return null;
+  if (!request) {
+    notFound();
   }
 
   return (
@@ -39,16 +45,24 @@ export default async function OfferPage({
         Make Offer
       </h1>
 
-      <p
-        style={{
-          marginTop: "16px",
-          fontSize: "16px",
-        }}
-      >
-        Card: {chaseItem.card.name}
-      </p>
+      <p>Card: {request.chaseItem.card.name}</p>
 
-      <OfferForm chaseItemId={id} />
+      <p>Requested by: {request.chaseItem.user.username}</p>
+
+      <OfferForm
+        chaseRequestId={request.id}
+        minPrice={
+          request.useRange
+            ? request.minPrice?.toNumber()
+            : request.price?.toNumber()
+        }
+        maxPrice={
+          request.useRange
+            ? request.maxPrice?.toNumber()
+            : request.price?.toNumber()
+        }
+        allowedConditions={request.conditions}
+      />
     </main>
   );
 }

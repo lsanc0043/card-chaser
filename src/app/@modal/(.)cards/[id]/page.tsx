@@ -1,20 +1,27 @@
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { addToChase, removeFromChase } from "@/app/actions/chase";
+import { removeFromChase } from "@/app/actions/chase";
 import { auth } from "@clerk/nextjs/server";
 import ChaseToggleButton from "@/components/chase-toggle-button";
 import CloseModalButton from "@/components/close-modal-button";
 import Image from "next/image";
 import TcgplayerButton from "@/components/tcgplayer-button";
 import ModalWrapper from "@/components/modal-wrapper";
+import CardModalTabs from "@/components/card-details-tabs";
+import { Edit } from "lucide-react";
+import Link from "next/link";
 
 export default async function CardModal({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   const { userId } = await auth();
   const { id } = await params;
+  const { from } = await searchParams;
+  const fromChase = from === "chase";
 
   const card = await prisma.card.findUnique({
     where: {
@@ -45,6 +52,13 @@ export default async function CardModal({
           userId: user.id,
           cardId: card.id,
         },
+        include: {
+          request: {
+            include: {
+              offers: true,
+            },
+          },
+        },
       })
     : null;
 
@@ -62,6 +76,251 @@ export default async function CardModal({
   };
 
   const prices = markets?.tcgplayer?.prices;
+
+  const detailsContent = (
+    <div
+      style={{
+        flex: 1,
+        width: "100%",
+      }}
+    >
+      <section>
+        <h2
+          style={{
+            fontSize: "20px",
+            fontWeight: 600,
+            marginBottom: "8px",
+            borderBottom: "1px solid gray",
+          }}
+        >
+          Card Details
+        </h2>
+        {attributes.Number && (
+          <p>
+            <strong>Number:</strong> {attributes.Number}
+          </p>
+        )}
+
+        {(attributes["Card Type"] || attributes.HP || attributes.Stage) && (
+          <p>
+            <strong>Type / HP / Stage: </strong>
+            {attributes["Card Type"] || "—"} / {attributes.HP || "—"} /{" "}
+            {attributes.Stage || "—"}
+          </p>
+        )}
+
+        {card.set.releaseDate && (
+          <p>
+            <strong>Release Date: </strong>
+            {new Date(card.set.releaseDate).toLocaleDateString()}
+          </p>
+        )}
+
+        {attributes.CardText && (
+          <section
+            style={{
+              marginTop: "10px",
+            }}
+          >
+            <h2
+              style={{
+                fontSize: "20px",
+                fontWeight: 600,
+                marginBottom: "8px",
+                borderBottom: "1px solid gray",
+              }}
+            >
+              Card Text
+            </h2>
+
+            <div
+              dangerouslySetInnerHTML={{
+                __html: attributes.CardText,
+              }}
+            />
+          </section>
+        )}
+
+        {attributes["Attack 1"] && (
+          <p
+            dangerouslySetInnerHTML={{
+              __html: `<strong>Attack 1:</strong> ${attributes["Attack 1"].replace(/\r\n/g, "")}`,
+            }}
+          />
+        )}
+
+        {(attributes.Weakness ||
+          attributes.Resistance ||
+          attributes.RetreatCost) && (
+          <p>
+            <strong>Weakness / Resistance / Retreat Cost: </strong>
+            {attributes.Weakness || "—"} / {attributes.Resistance || "—"} /{" "}
+            {attributes.RetreatCost || "—"}
+          </p>
+        )}
+      </section>
+
+      <section
+        style={{
+          marginTop: "10px",
+        }}
+      >
+        <h2
+          style={{
+            fontSize: "20px",
+            fontWeight: 600,
+            marginBottom: "8px",
+            borderBottom: "1px solid gray",
+          }}
+        >
+          Market
+        </h2>
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            marginBottom: "16px",
+            fontSize: "15px",
+          }}
+        >
+          <tbody>
+            {[
+              ["Low", prices?.low],
+              ["Mid", prices?.mid],
+              ["High", prices?.high],
+              ["Market", prices?.market],
+            ].map(([label, value]) => (
+              <tr key={label as string}>
+                <td
+                  style={{
+                    padding: "8px 12px",
+                    fontWeight: 600,
+                    borderBottom: "1px solid #e5e7eb",
+                  }}
+                >
+                  {label}
+                </td>
+
+                <td
+                  style={{
+                    padding: "8px 12px",
+                    textAlign: "right",
+                    borderBottom: "1px solid #e5e7eb",
+                  }}
+                >
+                  {value != null
+                    ? `$${Number(value).toLocaleString("en-US", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}`
+                    : "N/A"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div
+          style={{
+            marginTop: "16px",
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
+          <TcgplayerButton url={markets?.tcgplayer?.url} />
+        </div>
+      </section>
+    </div>
+  );
+
+  const editRequestContent = (
+    <div
+      style={{
+        flex: 1,
+        width: "500px",
+      }}
+    >
+      <section>
+        <h2
+          style={{
+            fontSize: "20px",
+            fontWeight: 600,
+            marginBottom: "8px",
+            borderBottom: "1px solid gray",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <span>Request Details</span>
+
+          <Link
+            href={`/cards/${card.id}/request`}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <Edit />
+          </Link>
+        </h2>
+
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            marginBottom: "16px",
+            fontSize: "15px",
+          }}
+        >
+          <tbody>
+            {[
+              ["Status", chaseItem?.status],
+              [
+                "Created On",
+                chaseItem?.createdAt &&
+                  new Date(chaseItem?.createdAt).toLocaleDateString(),
+              ],
+              [
+                "Price",
+                chaseItem?.request?.useRange
+                  ? `$${chaseItem.request.minPrice} - ${chaseItem.request.maxPrice}`
+                  : `$${chaseItem?.request?.price}`,
+              ],
+              ["Conditions", chaseItem?.request?.conditions.join(", ")],
+              ["Quantity", chaseItem?.request?.quantity],
+              ["# of Offers", chaseItem?.request?.offers.length],
+            ].map(([label, value]) => (
+              <tr key={label as string}>
+                <td
+                  style={{
+                    padding: "8px 12px",
+                    fontWeight: 600,
+                    borderBottom: "1px solid #e5e7eb",
+                  }}
+                >
+                  {label}
+                </td>
+
+                <td
+                  style={{
+                    padding: "8px 12px",
+                    textAlign: "right",
+                    borderBottom: "1px solid #e5e7eb",
+                  }}
+                >
+                  {value != null ? value : "N/A"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    </div>
+  );
 
   return (
     <ModalWrapper>
@@ -87,7 +346,6 @@ export default async function CardModal({
             alignItems: "center",
             gap: "12px",
             flexWrap: "wrap",
-            marginBottom: "24px",
           }}
         >
           <h1
@@ -131,185 +389,25 @@ export default async function CardModal({
           )}
         </div>
 
-        <div
-          style={{
-            overflowY: "auto",
-            flex: 1,
-          }}
-        >
-          <div className="flex flex-col md:flex-row gap-8 items-start">
-            <div>
-              {card.image?.medium && (
-                <Image
-                  src={card.image.medium || "/images/card-placeholder.svg"}
-                  alt={`${card.name} card image`}
-                  width={320}
-                  height={448}
-                  style={{
-                    borderRadius: "16px",
-                    boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
-                  }}
-                />
-              )}
-            </div>
-
-            <div
-              style={{
-                flex: 1,
-                width: "100%",
-              }}
-            >
-              <section>
-                <h2
-                  style={{
-                    fontSize: "20px",
-                    fontWeight: 600,
-                    marginBottom: "8px",
-                    borderBottom: "1px solid gray",
-                  }}
-                >
-                  Card Details
-                </h2>
-                {attributes.Number && (
-                  <p>
-                    <strong>Number:</strong> {attributes.Number}
-                  </p>
-                )}
-
-                {(attributes["Card Type"] ||
-                  attributes.HP ||
-                  attributes.Stage) && (
-                  <p>
-                    <strong>Type / HP / Stage: </strong>
-                    {attributes["Card Type"] || "—"} / {attributes.HP || "—"} /{" "}
-                    {attributes.Stage || "—"}
-                  </p>
-                )}
-
-                {card.set.releaseDate && (
-                  <p>
-                    <strong>Release Date: </strong>
-                    {new Date(card.set.releaseDate).toLocaleDateString()}
-                  </p>
-                )}
-
-                {attributes.CardText && (
-                  <section
-                    style={{
-                      marginTop: "10px",
-                    }}
-                  >
-                    <h2
-                      style={{
-                        fontSize: "20px",
-                        fontWeight: 600,
-                        marginBottom: "8px",
-                        borderBottom: "1px solid gray",
-                      }}
-                    >
-                      Card Text
-                    </h2>
-
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: attributes.CardText,
-                      }}
-                    />
-                  </section>
-                )}
-
-                {attributes["Attack 1"] && (
-                  <p
-                    dangerouslySetInnerHTML={{
-                      __html: `<strong>Attack 1:</strong> ${attributes["Attack 1"].replace(/\r\n/g, "")}`,
-                    }}
-                  />
-                )}
-
-                {(attributes.Weakness ||
-                  attributes.Resistance ||
-                  attributes.RetreatCost) && (
-                  <p>
-                    <strong>Weakness / Resistance / Retreat Cost: </strong>
-                    {attributes.Weakness || "—"} /{" "}
-                    {attributes.Resistance || "—"} /{" "}
-                    {attributes.RetreatCost || "—"}
-                  </p>
-                )}
-              </section>
-
-              <section
+        <CardModalTabs
+          showTabs={fromChase}
+          image={
+            card.image?.medium && (
+              <Image
+                src={card.image.medium}
+                alt={`${card.name} card image`}
+                width={320}
+                height={448}
                 style={{
-                  marginTop: "10px",
+                  borderRadius: "16px",
+                  boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
                 }}
-              >
-                <h2
-                  style={{
-                    fontSize: "20px",
-                    fontWeight: 600,
-                    marginBottom: "8px",
-                    borderBottom: "1px solid gray",
-                  }}
-                >
-                  Market
-                </h2>
-                <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    marginBottom: "16px",
-                    fontSize: "15px",
-                  }}
-                >
-                  <tbody>
-                    {[
-                      ["Low", prices?.low],
-                      ["Mid", prices?.mid],
-                      ["High", prices?.high],
-                      ["Market", prices?.market],
-                    ].map(([label, value]) => (
-                      <tr key={label as string}>
-                        <td
-                          style={{
-                            padding: "8px 12px",
-                            fontWeight: 600,
-                            borderBottom: "1px solid #e5e7eb",
-                          }}
-                        >
-                          {label}
-                        </td>
-
-                        <td
-                          style={{
-                            padding: "8px 12px",
-                            textAlign: "right",
-                            borderBottom: "1px solid #e5e7eb",
-                          }}
-                        >
-                          {value != null
-                            ? `$${Number(value).toLocaleString("en-US", {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}`
-                            : "N/A"}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <div
-                  style={{
-                    marginTop: "16px",
-                    display: "flex",
-                    justifyContent: "flex-end",
-                  }}
-                >
-                  <TcgplayerButton url={markets?.tcgplayer?.url} />
-                </div>
-              </section>
-            </div>
-          </div>
-        </div>
+              />
+            )
+          }
+          details={detailsContent}
+          editRequest={editRequestContent}
+        />
 
         <div
           style={{
@@ -325,11 +423,6 @@ export default async function CardModal({
             userId={userId}
             cardId={card.id}
             chaseItemId={chaseItem?.id}
-            addAction={async () => {
-              "use server";
-
-              await addToChase(card.id, `/cards/${card.id}`);
-            }}
             removeAction={async () => {
               "use server";
 

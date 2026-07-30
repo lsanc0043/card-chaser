@@ -98,25 +98,58 @@ model ChaseItem {
   user User @relation(fields: [userId], references: [id])
   card Card @relation(fields: [cardId], references: [id])
 
-  offers Offer[]
+  request ChaseRequest?
 
   createdAt DateTime @default(now())
+
+  @@unique([userId, cardId])
+  @@index([status])
+}
+
+model ChaseRequest {
+  id String @id @default(uuid())
+
+  chaseItemId String @unique
+
+  chaseItem ChaseItem @relation(fields: [chaseItemId], references: [id], onDelete: Cascade)
+
+  offers Offer[]
+
+  price Decimal?
+
+  useRange Boolean @default(false)
+
+  minPrice Decimal?
+  maxPrice Decimal?
+
+  conditions String[]
+
+  quantity Int
+
+  createdAt DateTime @default(now())
+
+  @@index([conditions])
 }
 
 model Offer {
   id String @id @default(uuid())
 
-  sellerId    String
-  chaseItemId String
+  sellerId       String
+  chaseRequestId String
 
-  price     Float
+  price     Decimal
   condition String
   message   String?
 
-  seller    User      @relation(fields: [sellerId], references: [id])
-  chaseItem ChaseItem @relation(fields: [chaseItemId], references: [id], onDelete: Cascade)
+  seller User @relation(fields: [sellerId], references: [id])
+
+  chaseRequest ChaseRequest @relation(fields: [chaseRequestId], references: [id], onDelete: Cascade)
 
   status String @default("PENDING")
 
   createdAt DateTime @default(now())
+
+  @@unique([sellerId, chaseRequestId])
+  @@index([status])
+  @@index([chaseRequestId])
 }

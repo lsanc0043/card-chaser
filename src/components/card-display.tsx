@@ -34,16 +34,16 @@ export default function CardDisplay({
 
   return (
     <div>
-      <Link href={`/cards/${card.id}`}>
-        <Card
-          style={{
-            width: "220px",
-            overflow: "hidden",
-            padding: "16px",
-            borderRadius: "8px",
-          }}
-          className="hover:shadow-lg transition-shadow"
-        >
+      <Card
+        style={{
+          width: "220px",
+          overflow: "hidden",
+          padding: "16px",
+          borderRadius: "8px",
+        }}
+        className="hover:shadow-lg transition-shadow"
+      >
+        <Link href={`/cards/${card.id}${showRemoveChase ? "?from=chase" : ""}`}>
           <CardHeader style={{ padding: "0px" }}>
             {card.image?.medium && (
               <div
@@ -111,44 +111,44 @@ export default function CardDisplay({
               )}
             </div>
           </CardHeader>
+        </Link>
 
-          {isMarketplaceCard && wantedByUserId && (
-            <CardFooter
+        {isMarketplaceCard && wantedByUserId && (
+          <CardFooter
+            style={{
+              padding: "0px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "start",
+            }}
+          >
+            <p>
+              <strong>Wanted by: </strong> {wantedByUserId}
+            </p>
+            <Link
+              href={`/marketplace/${requestId}`}
+              className="hover:bg-gray-100 transition-colors"
               style={{
-                padding: "0px",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "start",
+                display: "inline-block",
+                marginTop: "16px",
+                border: "1px solid #d1d5db",
+                padding: "8px 16px",
+                borderRadius: "6px",
+                textDecoration: "none",
+                color: "inherit",
               }}
             >
-              <p>
-                <strong>Wanted by: </strong> {wantedByUserId}
-              </p>
-              <Link
-                href={`/marketplace/${requestId}`}
-                className="hover:bg-gray-100 transition-colors"
-                style={{
-                  display: "inline-block",
-                  marginTop: "16px",
-                  border: "1px solid #d1d5db",
-                  padding: "8px 16px",
-                  borderRadius: "6px",
-                  textDecoration: "none",
-                  color: "inherit",
-                }}
-              >
-                Make Offer
-              </Link>
-            </CardFooter>
-          )}
+              Make Offer
+            </Link>
+          </CardFooter>
+        )}
 
-          {showRemoveChase && chaseItemId && (
-            <CardFooter style={{ padding: "0px" }}>
-              <RemoveChaseButton chaseItemId={chaseItemId} />
-            </CardFooter>
-          )}
-        </Card>
-      </Link>
+        {showRemoveChase && chaseItemId && (
+          <CardFooter style={{ padding: "0px" }}>
+            <RemoveChaseButton chaseItemId={chaseItemId} cardId={card.id} />
+          </CardFooter>
+        )}
+      </Card>
     </div>
   );
 }

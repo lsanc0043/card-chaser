@@ -20,13 +20,26 @@ export async function POST(req: Request) {
     return Response.json({ error: "User not found" }, { status: 400 });
   }
 
-  const offer = await prisma.offer.create({
-    data: {
-      sellerId: seller.id,
-      chaseItemId: body.chaseItemId,
+  const offer = await prisma.offer.upsert({
+    where: {
+      sellerId_chaseRequestId: {
+        sellerId: seller.id,
+        chaseRequestId: body.chaseRequestId,
+      },
+    },
+    update: {
       price: Number(body.price),
       condition: body.condition,
       status: "PENDING",
+      message: body.message,
+    },
+    create: {
+      sellerId: seller.id,
+      chaseRequestId: body.chaseRequestId,
+      price: Number(body.price),
+      condition: body.condition,
+      status: "PENDING",
+      message: body.message,
     },
   });
 
