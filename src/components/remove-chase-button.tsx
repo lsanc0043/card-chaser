@@ -4,11 +4,13 @@ import { removeFromChase } from "@/app/actions/chase";
 
 export default function RemoveChaseButton({
   chaseItemId,
+  cardId,
 }: {
   chaseItemId: string;
+  cardId: string;
 }) {
   async function handleRemove() {
-    await removeFromChase(chaseItemId);
+    await removeFromChase(chaseItemId, cardId);
     window.location.reload();
   }
 

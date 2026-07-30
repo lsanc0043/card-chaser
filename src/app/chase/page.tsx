@@ -40,11 +40,6 @@ export default async function ChasePage() {
           image: true,
         },
       },
-      offers: {
-        include: {
-          seller: true,
-        },
-      },
     },
   });
 

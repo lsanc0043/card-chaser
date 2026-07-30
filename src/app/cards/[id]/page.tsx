@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { addToChase, removeFromChase } from "@/app/actions/chase";
+import { removeFromChase } from "@/app/actions/chase";
 import { auth } from "@clerk/nextjs/server";
 import ChaseToggleButton from "@/components/chase-toggle-button";
 import Image from "next/image";
@@ -134,11 +134,6 @@ export default async function CardPage({
               userId={userId}
               cardId={card.id}
               chaseItemId={chaseItem?.id}
-              addAction={async () => {
-                "use server";
-
-                await addToChase(card.id, `/cards/${card.id}`);
-              }}
               removeAction={async () => {
                 "use server";
 
