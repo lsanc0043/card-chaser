@@ -1,13 +1,13 @@
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { removeFromChase } from "@/app/actions/chase";
+import { removeFromChase } from "@/actions/chase";
 import { auth } from "@clerk/nextjs/server";
 import ChaseToggleButton from "@/components/chase-toggle-button";
 import CloseModalButton from "@/components/close-modal-button";
 import Image from "next/image";
 import TcgplayerButton from "@/components/tcgplayer-button";
 import ModalWrapper from "@/components/modal-wrapper";
-import CardModalTabs from "@/components/card-details-tabs";
+import CardModalTabs from "@/components/cards/card-details-tabs";
 import { Edit } from "lucide-react";
 import Link from "next/link";
 

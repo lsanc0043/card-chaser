@@ -3,23 +3,48 @@ import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const query = searchParams.get("q");
 
-  if (!query) {
-    return NextResponse.json([]);
-  }
+  const q = searchParams.get("q");
+  const tcg = searchParams.get("tcg");
+  const set = searchParams.get("set");
+  const rarity = searchParams.get("rarity");
 
   const cards = await prisma.card.findMany({
     where: {
-      name: {
-        contains: query,
-        mode: "insensitive",
-      },
+      ...(q && {
+        name: {
+          contains: q,
+          mode: "insensitive",
+        },
+      }),
+
+      ...(tcg && {
+        tcg: {
+          externalId: tcg,
+        },
+      }),
+
+      ...(set && {
+        set: {
+          slug: set,
+        },
+      }),
+
+      ...(rarity && {
+        attributes: {
+          path: ["Rarity"],
+          equals: rarity,
+        },
+      }),
     },
+
     include: {
       set: true,
+      tcg: true,
+      image: true,
     },
-    take: 10,
+
+    take: 5,
   });
 
   const results = cards.map((card) => {

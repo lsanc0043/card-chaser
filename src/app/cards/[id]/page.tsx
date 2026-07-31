@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { removeFromChase } from "@/app/actions/chase";
+import { removeFromChase } from "@/actions/chase";
 import { auth } from "@clerk/nextjs/server";
 import ChaseToggleButton from "@/components/chase-toggle-button";
 import Image from "next/image";

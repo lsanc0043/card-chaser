@@ -24,7 +24,7 @@ export default function Home() {
         }}
       >
         <Link
-          href="/search"
+          href="/browse"
           style={{
             backgroundColor: "black",
             color: "white",
@@ -33,20 +33,7 @@ export default function Home() {
             textDecoration: "none",
           }}
         >
-          Search Cards
-        </Link>
-
-        <Link
-          href="/chase"
-          style={{
-            border: "1px solid #d1d5db",
-            padding: "8px 16px",
-            borderRadius: "6px",
-            textDecoration: "none",
-            color: "inherit",
-          }}
-        >
-          My Chase List
+          Browse Cards
         </Link>
       </div>
     </main>

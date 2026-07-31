@@ -1,6 +1,6 @@
 "use client";
 
-import { removeFromChase } from "@/app/actions/chase";
+import { removeFromChase } from "@/actions/chase";
 
 export default function RemoveChaseButton({
   chaseItemId,
