@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import AuthRequiredModal from "@/components/auth-required-modal";
-import CardDisplay from "@/components/card-display";
+import CardDisplay from "@/components/cards/card-display";
 
 export default async function ChasePage() {
   const { userId } = await auth();
@@ -19,10 +19,10 @@ export default async function ChasePage() {
             fontWeight: 700,
           }}
         >
-          My Chase List
+          My Chase Requests
         </h1>
 
-        <AuthRequiredModal redirectUrl={"/chase"} />
+        <AuthRequiredModal redirectUrl={"/requests"} />
       </main>
     );
   }
@@ -56,7 +56,7 @@ export default async function ChasePage() {
           marginBottom: "10px",
         }}
       >
-        My Chase List
+        My Chase Requests
       </h1>
 
       <div
