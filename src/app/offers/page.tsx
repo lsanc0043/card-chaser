@@ -1,10 +1,10 @@
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
-import OffersTable from "@/components/offers-table";
+import OffersTable from "@/components/offers/offers-table";
 import { getCardFilters } from "@/lib/cards/getCardFilters";
 import { buildCardWhere } from "@/lib/cards/buildCardWhere";
-import ActiveFilters from "@/components/cards/active-filters";
-import CardSearch from "@/components/cards/card-search";
+import ActiveFilters from "@/components/browse/active-filters";
+import CardSearch from "@/components/browse/card-search";
 
 export default async function OffersPage({
   searchParams,

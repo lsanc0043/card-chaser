@@ -1,6 +1,6 @@
-import ActiveFilters from "@/components/cards/active-filters";
-import CardSearch from "@/components/cards/card-search";
-import MarketplaceTable from "@/components/marketplace-table";
+import ActiveFilters from "@/components/browse/active-filters";
+import CardSearch from "@/components/browse/card-search";
+import MarketplaceTable from "@/components/marketplace/marketplace-table";
 import { buildCardWhere } from "@/lib/cards/buildCardWhere";
 import { getCardFilters } from "@/lib/cards/getCardFilters";
 import prisma from "@/lib/prisma";

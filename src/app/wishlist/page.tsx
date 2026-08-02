@@ -1,6 +1,6 @@
-import ActiveFilters from "@/components/cards/active-filters";
-import CardSearch from "@/components/cards/card-search";
-import WishlistCard from "@/components/wishlist/wishlist-card";
+import ActiveFilters from "@/components/browse/active-filters";
+import CardSearch from "@/components/browse/card-search";
+import CardDisplay from "@/components/cards/card-display";
 import { buildCardWhere } from "@/lib/cards/buildCardWhere";
 import { getCardFilters } from "@/lib/cards/getCardFilters";
 import prisma from "@/lib/prisma";
@@ -97,27 +97,13 @@ export default async function WishlistPage({
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, 280px)",
+              gridTemplateColumns: "repeat(auto-fill, 220px)",
               gap: "24px",
+              justifyContent: "start",
             }}
           >
             {wishlistItems.map((item) => (
-              <WishlistCard
-                key={item.id}
-                item={{
-                  ...item,
-                  chaseRequest: item.chaseRequest
-                    ? {
-                        ...item.chaseRequest,
-                        price: item.chaseRequest.price?.toString() ?? null,
-                        minPrice:
-                          item.chaseRequest.minPrice?.toString() ?? null,
-                        maxPrice:
-                          item.chaseRequest.maxPrice?.toString() ?? null,
-                      }
-                    : null,
-                }}
-              />
+              <CardDisplay key={item.id} card={item.card} context="wishlist" />
             ))}
           </div>
         )}

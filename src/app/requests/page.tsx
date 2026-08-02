@@ -1,11 +1,11 @@
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import AuthRequiredModal from "@/components/auth-required-modal";
+import AuthRequiredModal from "@/components/modals/auth-required-modal";
 import CardDisplay from "@/components/cards/card-display";
 import { getCardFilters } from "@/lib/cards/getCardFilters";
 import { buildCardWhere } from "@/lib/cards/buildCardWhere";
-import CardSearch from "@/components/cards/card-search";
-import ActiveFilters from "@/components/cards/active-filters";
+import CardSearch from "@/components/browse/card-search";
+import ActiveFilters from "@/components/browse/active-filters";
 
 export default async function ChasePage({
   searchParams,
@@ -124,10 +124,9 @@ export default async function ChasePage({
             {chaseRequests.map((request) => {
               return (
                 <CardDisplay
-                  card={request.wishlistItem.card}
-                  showRemoveChase={true}
-                  wishlistItemId={request.id}
                   key={request.id}
+                  card={request.wishlistItem.card}
+                  context="requests"
                 />
               );
             })}
