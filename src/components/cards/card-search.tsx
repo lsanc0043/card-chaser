@@ -15,7 +15,7 @@ type Card = {
   };
 };
 
-export default function CardSearch() {
+export default function CardSearch({ basePath }: { basePath: string }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Card[]>([]);
   const [loading, setLoading] = useState(false);
@@ -155,7 +155,11 @@ export default function CardSearch() {
                   </div>
                 </Link>
                 <Link
-                  href={`/browse?q=${query}`}
+                  href={`/${basePath}?${(() => {
+                    const params = new URLSearchParams(window.location.search);
+                    params.set("q", query);
+                    return params.toString();
+                  })()}`}
                   className="block p-3 border-t font-semibold hover:bg-gray-100 transition-colors"
                   style={{
                     textDecoration: "none",

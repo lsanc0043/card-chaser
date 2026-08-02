@@ -1,7 +1,8 @@
 import CardSearch from "@/components/cards/card-search";
-import prisma from "@/lib/prisma";
 import CardDisplay from "@/components/cards/card-display";
 import ActiveFilters from "@/components/cards/active-filters";
+import { getCardFilters } from "@/lib/cards/getCardFilters";
+import { getCards } from "@/lib/cards/getCards";
 
 export default async function BrowsePage({
   searchParams,
@@ -13,50 +14,11 @@ export default async function BrowsePage({
     set?: string;
   }>;
 }) {
-  const { q: query, tcg, rarity, set } = await searchParams;
+  const filters = await getCardFilters(searchParams);
 
-  const cards = await prisma.card.findMany({
-    where: {
-      ...(query && {
-        name: {
-          contains: query,
-          mode: "insensitive",
-        },
-      }),
+  const cards = await getCards(filters);
 
-      ...(tcg && {
-        tcg: {
-          externalId: tcg,
-        },
-      }),
-
-      ...(rarity && {
-        attributes: {
-          path: ["Rarity"],
-          equals: rarity,
-        },
-      }),
-
-      ...(set && {
-        set: {
-          name: {
-            equals: set,
-            mode: "insensitive",
-          },
-        },
-      }),
-    },
-    orderBy: {
-      name: "asc",
-    },
-    include: {
-      set: true,
-      tcg: true,
-      image: true,
-    },
-  });
-
-  const hasFilters = query || tcg || rarity || set;
+  const hasFilters = Object.values(filters).some(Boolean);
 
   return (
     <main
@@ -75,10 +37,10 @@ export default async function BrowsePage({
       </h1>
 
       <div style={{ marginBottom: "10px", display: "flex", gap: 10 }}>
-        <CardSearch key={`${tcg}-${rarity}-${set}`} />
+        <CardSearch basePath="browse" />
       </div>
 
-      <ActiveFilters />
+      <ActiveFilters basePath="browse" />
 
       {hasFilters && cards.length > 0 && (
         <p

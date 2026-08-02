@@ -23,49 +23,47 @@ const rarityOptionsByTcg: Record<string, string[]> = {
     "Ultra Rare",
     "Secret Rare",
   ],
-  "one-piece": [
-    "Common",
-    "Uncommon",
-    "Rare",
-    "Super Rare",
-    "Secret Rare",
-    "Leader",
-  ],
+  "one-piece": ["C", "UC", "R", "SR", "SEC", "L"],
 };
 
-export default function CardFiltersModal() {
+export default function CardFiltersModal({ basePath }: { basePath: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const [open, setOpen] = useState(false);
 
-  const [tcg, setTcg] = useState(searchParams.get("tcg") ?? "");
-  const [rarity, setRarity] = useState(searchParams.get("rarity") ?? "");
+  const [tcgs, setTcgs] = useState(searchParams.get("tcg")?.split(",") ?? []);
 
-  const rarityOptions = tcg ? (rarityOptionsByTcg[tcg] ?? []) : [];
+  const [rarities, setRarities] = useState(
+    searchParams.get("rarity")?.split(",") ?? [],
+  );
+
+  const rarityOptions = [
+    ...new Set(tcgs.flatMap((tcg) => rarityOptionsByTcg[tcg] ?? [])),
+  ];
 
   function applyFilters() {
     const params = new URLSearchParams(searchParams.toString());
 
-    if (tcg) {
-      params.set("tcg", tcg);
+    if (tcgs.length > 0) {
+      params.set("tcg", tcgs.join(","));
     } else {
       params.delete("tcg");
     }
 
-    if (rarity) {
-      params.set("rarity", rarity);
+    if (rarities.length > 0) {
+      params.set("rarity", rarities.join(","));
     } else {
       params.delete("rarity");
     }
 
-    router.push(`/browse?${params.toString()}`);
+    router.push(`/${basePath}?${params.toString()}`);
     setOpen(false);
   }
 
   function clearFilters() {
-    setTcg("");
-    setRarity("");
+    setTcgs([]);
+    setRarities([]);
 
     const params = new URLSearchParams(searchParams.toString());
 
@@ -75,25 +73,29 @@ export default function CardFiltersModal() {
 
     const queryString = params.toString();
 
-    router.push(queryString ? `/browse?${queryString}` : "/browse");
+    router.push(queryString ? `/${basePath}?${queryString}` : `/${basePath}`);
 
     setOpen(false);
   }
 
-  function toggleFilter(
-    current: string,
+  function toggleArrayFilter(
+    current: string[],
     value: string,
-    setter: (value: string) => void,
+    setter: (value: string[]) => void,
   ) {
-    setter(current === value ? "" : value);
+    if (current.includes(value)) {
+      setter(current.filter((item) => item !== value));
+    } else {
+      setter([...current, value]);
+    }
   }
 
   return (
     <>
       <button
         onClick={() => {
-          setTcg(searchParams.get("tcg") ?? "");
-          setRarity(searchParams.get("rarity") ?? "");
+          setTcgs(searchParams.get("tcg")?.split(",") ?? []);
+          setRarities(searchParams.get("rarity")?.split(",") ?? []);
           setOpen(true);
         }}
         className="hover:bg-gray-100 transition-colors"
@@ -167,12 +169,14 @@ export default function CardFiltersModal() {
                 }}
               >
                 {tcgOptions.map((option) => {
-                  const selected = tcg === option.value;
+                  const selected = tcgs.includes(option.value);
 
                   return (
                     <button
                       key={option.value}
-                      onClick={() => toggleFilter(tcg, option.value, setTcg)}
+                      onClick={() =>
+                        toggleArrayFilter(tcgs, option.value, setTcgs)
+                      }
                       className="hover:bg-gray-100 transition-colors"
                       style={{
                         padding: "8px 14px",
@@ -216,7 +220,7 @@ export default function CardFiltersModal() {
                 Rarity
               </p>
 
-              {!tcg ? (
+              {!tcgs.length ? (
                 <p
                   style={{
                     color: "#6b7280",
@@ -234,12 +238,14 @@ export default function CardFiltersModal() {
                   }}
                 >
                   {rarityOptions.map((option) => {
-                    const selected = rarity === option;
+                    const selected = rarities.includes(option);
 
                     return (
                       <button
                         key={option}
-                        onClick={() => setRarity(selected ? "" : option)}
+                        onClick={() =>
+                          toggleArrayFilter(rarities, option, setRarities)
+                        }
                         className="hover:bg-gray-100 transition-colors"
                         style={{
                           padding: "8px 12px",

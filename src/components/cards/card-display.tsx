@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import RemoveChaseButton from "@/components/remove-chase-button";
+import RemoveChaseButton from "@/components/collection/remove-chase-button";
 
 type CardDisplayProps = {
   card: {
@@ -16,7 +16,7 @@ type CardDisplayProps = {
     attributes: unknown;
   };
   showRemoveChase?: boolean;
-  chaseItemId?: string;
+  wishlistItemId?: string;
   isMarketplaceCard?: boolean;
   wantedByUserId?: string;
   requestId?: string;
@@ -25,7 +25,7 @@ type CardDisplayProps = {
 export default function CardDisplay({
   card,
   showRemoveChase = false,
-  chaseItemId,
+  wishlistItemId,
   isMarketplaceCard = false,
   wantedByUserId,
   requestId,
@@ -143,11 +143,14 @@ export default function CardDisplay({
           </CardFooter>
         )}
 
-        {showRemoveChase && chaseItemId && (
+        {/* {showRemoveChase && wishlistItemId && (
           <CardFooter style={{ padding: "0px" }}>
-            <RemoveChaseButton chaseItemId={chaseItemId} cardId={card.id} />
+            <RemoveChaseButton
+              wishlistItemId={wishlistItemId}
+              cardId={card.id}
+            />
           </CardFooter>
-        )}
+        )} */}
       </Card>
     </div>
   );
