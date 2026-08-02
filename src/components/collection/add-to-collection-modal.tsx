@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { addToCollection } from "@/actions/collection";
-import ModalWrapper from "../modal-wrapper";
+import ModalWrapper from "../modals/modal-wrapper";
 
 const CONDITIONS = [
   "Near Mint",

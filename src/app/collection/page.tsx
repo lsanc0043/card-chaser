@@ -1,6 +1,6 @@
-import ActiveFilters from "@/components/cards/active-filters";
-import CardSearch from "@/components/cards/card-search";
-import CollectionCard from "@/components/collection/collection-card";
+import ActiveFilters from "@/components/browse/active-filters";
+import CardSearch from "@/components/browse/card-search";
+import CardDisplay from "@/components/cards/card-display";
 import { buildCardWhere } from "@/lib/cards/buildCardWhere";
 import { getCardFilters } from "@/lib/cards/getCardFilters";
 import prisma from "@/lib/prisma";
@@ -94,24 +94,20 @@ export default async function CollectionPage({
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, 280px)",
+              gridTemplateColumns: "repeat(auto-fill, 220px)",
               gap: "24px",
+              justifyContent: "start",
             }}
           >
             {(collectionItems || []).map((item) => {
-              const attributes = item.card.attributes as Record<string, string>;
               return (
-                <CollectionCard
+                <CardDisplay
                   key={item.id}
-                  item={{
-                    ...item,
-                    purchasePrice: item.purchasePrice?.toString() ?? null,
-                    card: {
-                      ...item.card,
-                      attributes: {
-                        Rarity: attributes.Rarity ?? null,
-                      },
-                    },
+                  card={item.card}
+                  context="collection"
+                  collectionItem={{
+                    quantity: item.quantity,
+                    condition: item.condition,
                   }}
                 />
               );

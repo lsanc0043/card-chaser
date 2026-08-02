@@ -1,6 +1,6 @@
-import CardSearch from "@/components/cards/card-search";
+import CardSearch from "@/components/browse/card-search";
 import CardDisplay from "@/components/cards/card-display";
-import ActiveFilters from "@/components/cards/active-filters";
+import ActiveFilters from "@/components/browse/active-filters";
 import { getCardFilters } from "@/lib/cards/getCardFilters";
 import { getCards } from "@/lib/cards/getCards";
 
@@ -73,7 +73,7 @@ export default async function BrowsePage({
             }}
           >
             {cards.map((card) => {
-              return <CardDisplay card={card} key={card.id} />;
+              return <CardDisplay key={card.id} card={card} context="browse" />;
             })}
           </div>
         )}

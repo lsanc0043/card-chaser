@@ -1,5 +1,3 @@
-// lib/cards/getCards.ts
-
 import prisma from "@/lib/prisma";
 import { buildCardWhere } from "./buildCardWhere";
 

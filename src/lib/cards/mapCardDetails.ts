@@ -89,7 +89,6 @@ export function mapCardDetails(
       common,
       sections: [
         {
-          title: "One Piece",
           fields: [
             {
               label: "Card Type",

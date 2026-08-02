@@ -1,35 +1,47 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import RemoveChaseButton from "@/components/collection/remove-chase-button";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContext, CardWithDetails } from "@/lib/cards/types";
 
 type CardDisplayProps = {
-  card: {
-    id: string;
-    name: string;
-    image: {
-      medium: string | null;
-    } | null;
-    set: {
-      name: string;
-    } | null;
-    attributes: unknown;
+  card: CardWithDetails;
+  context: CardContext;
+  collectionItem?: {
+    quantity: number;
+    condition: string;
   };
-  showRemoveChase?: boolean;
-  wishlistItemId?: string;
-  isMarketplaceCard?: boolean;
-  wantedByUserId?: string;
-  requestId?: string;
 };
 
 export default function CardDisplay({
   card,
-  showRemoveChase = false,
-  wishlistItemId,
-  isMarketplaceCard = false,
-  wantedByUserId,
-  requestId,
+  context,
+  collectionItem,
 }: CardDisplayProps) {
+  function getContextSpecificDetails() {
+    switch (context) {
+      case "collection":
+        return (
+          <div>
+            <p
+              style={{
+                fontWeight: 700,
+                color: "#6b7280",
+                textTransform: "uppercase",
+              }}
+            >
+              {collectionItem?.condition}
+            </p>
+
+            <p>
+              Qty: <strong>{collectionItem?.quantity}</strong>
+            </p>
+          </div>
+        );
+      default:
+        return <></>;
+    }
+  }
+
   const attributes = card.attributes as Record<string, string>;
 
   return (
@@ -43,7 +55,7 @@ export default function CardDisplay({
         }}
         className="hover:shadow-lg transition-shadow"
       >
-        <Link href={`/cards/${card.id}${showRemoveChase ? "?from=chase" : ""}`}>
+        <Link href={`/cards/${card.id}?context=${context}`}>
           <CardHeader style={{ padding: "0px" }}>
             {card.image?.medium && (
               <div
@@ -112,45 +124,7 @@ export default function CardDisplay({
             </div>
           </CardHeader>
         </Link>
-
-        {isMarketplaceCard && wantedByUserId && (
-          <CardFooter
-            style={{
-              padding: "0px",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "start",
-            }}
-          >
-            <p>
-              <strong>Wanted by: </strong> {wantedByUserId}
-            </p>
-            <Link
-              href={`/marketplace/${requestId}`}
-              className="hover:bg-gray-100 transition-colors"
-              style={{
-                display: "inline-block",
-                marginTop: "16px",
-                border: "1px solid #d1d5db",
-                padding: "8px 16px",
-                borderRadius: "6px",
-                textDecoration: "none",
-                color: "inherit",
-              }}
-            >
-              Make Offer
-            </Link>
-          </CardFooter>
-        )}
-
-        {/* {showRemoveChase && wishlistItemId && (
-          <CardFooter style={{ padding: "0px" }}>
-            <RemoveChaseButton
-              wishlistItemId={wishlistItemId}
-              cardId={card.id}
-            />
-          </CardFooter>
-        )} */}
+        {getContextSpecificDetails()}
       </Card>
     </div>
   );
