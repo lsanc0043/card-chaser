@@ -12,7 +12,7 @@ type Offer = {
   condition: string | null;
   chaseRequest: {
     id: string;
-    chaseItem: {
+    wishlistItem: {
       card: {
         id: string;
         name: string;
@@ -79,7 +79,7 @@ export default function OffersTable({ offers }: { offers: Offer[] }) {
           {offers.map((offer) => {
             console.log(offer);
             const request = offer.chaseRequest;
-            const card = request.chaseItem.card;
+            const card = request.wishlistItem.card;
             const attributes = card.attributes as Record<string, string>;
 
             return (
@@ -144,7 +144,9 @@ export default function OffersTable({ offers }: { offers: Offer[] }) {
                   </Link>
                 </td>
 
-                <td style={cellStyle}>{request.chaseItem.user.displayName}</td>
+                <td style={cellStyle}>
+                  {request.wishlistItem.user.displayName}
+                </td>
 
                 <td
                   style={{

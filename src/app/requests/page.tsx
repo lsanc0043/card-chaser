@@ -2,8 +2,21 @@ import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import AuthRequiredModal from "@/components/auth-required-modal";
 import CardDisplay from "@/components/cards/card-display";
+import { getCardFilters } from "@/lib/cards/getCardFilters";
+import { buildCardWhere } from "@/lib/cards/buildCardWhere";
+import CardSearch from "@/components/cards/card-search";
+import ActiveFilters from "@/components/cards/active-filters";
 
-export default async function ChasePage() {
+export default async function ChasePage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    q?: string;
+    tcg?: string;
+    rarity?: string;
+    set?: string;
+  }>;
+}) {
   const { userId } = await auth();
 
   if (!userId) {
@@ -27,19 +40,31 @@ export default async function ChasePage() {
     );
   }
 
-  const chaseItems = await prisma.chaseItem.findMany({
+  const filters = await getCardFilters(searchParams);
+  const hasFilters = Object.values(filters).some(Boolean);
+
+  const chaseRequests = await prisma.chaseRequest.findMany({
     where: {
-      user: {
-        clerkId: userId,
+      wishlistItem: {
+        user: {
+          clerkId: userId,
+        },
+        card: buildCardWhere(filters),
       },
     },
     include: {
-      card: {
+      wishlistItem: {
         include: {
-          set: true,
-          image: true,
+          card: {
+            include: {
+              image: true,
+              set: true,
+              tcg: true,
+            },
+          },
         },
       },
+      offers: true,
     },
   });
 
@@ -59,24 +84,55 @@ export default async function ChasePage() {
         My Chase Requests
       </h1>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, 220px)",
-          gap: "24px",
-          justifyContent: "start",
-        }}
-      >
-        {chaseItems.map((item) => {
-          return (
-            <CardDisplay
-              card={item.card}
-              showRemoveChase={true}
-              chaseItemId={item.id}
-              key={item.id}
-            />
-          );
-        })}
+      <div style={{ marginBottom: "10px", display: "flex", gap: 10 }}>
+        <CardSearch basePath="requests" />
+      </div>
+
+      <ActiveFilters basePath="requests" />
+
+      {hasFilters && chaseRequests.length > 0 && (
+        <p
+          style={{
+            color: "#6b7280",
+            margin: "5px 5px 10px",
+          }}
+        >
+          Showing {chaseRequests.length} request
+          {chaseRequests.length !== 1 ? "s" : ""}
+        </p>
+      )}
+
+      <div>
+        {chaseRequests.length === 0 ? (
+          <p
+            style={{
+              color: "#6b7280",
+              margin: "5px 5px 10px",
+            }}
+          >
+            No chase requests found. Try adjusting your search or filters.
+          </p>
+        ) : (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, 220px)",
+              gap: "24px",
+              justifyContent: "start",
+            }}
+          >
+            {chaseRequests.map((request) => {
+              return (
+                <CardDisplay
+                  card={request.wishlistItem.card}
+                  showRemoveChase={true}
+                  wishlistItemId={request.id}
+                  key={request.id}
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
     </main>
   );
