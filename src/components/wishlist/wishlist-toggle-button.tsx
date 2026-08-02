@@ -13,28 +13,24 @@ export default function WishlistToggleButton({
 }) {
   const inWishlist = !!wishlistItemId;
 
-  if (inWishlist) {
-    return (
-      <form action={removeAction}>
-        <button
-          className="transition-shadow hover:shadow-lg hover:ring-2 hover:ring-red-500"
-          style={{
-            border: "1px solid #dc2626",
-            padding: "10px 18px",
-            borderRadius: "0.75rem",
-            backgroundColor: "#fee2e2",
-            color: "#dc2626",
-            cursor: "pointer",
-            fontWeight: 600,
-          }}
-        >
-          Remove from Wishlist
-        </button>
-      </form>
-    );
-  }
-
-  return (
+  return inWishlist ? (
+    <button
+      className="transition-shadow hover:shadow-lg hover:ring-2 hover:ring-red-500"
+      style={{
+        border: "1px solid #dc2626",
+        padding: "10px 18px",
+        borderRadius: "0.75rem",
+        backgroundColor: "#fee2e2",
+        color: "#dc2626",
+        cursor: "pointer",
+        fontWeight: 600,
+        marginTop: "8px",
+      }}
+      onClick={removeAction}
+    >
+      Remove from Wishlist
+    </button>
+  ) : (
     <Link
       href={`/cards/${cardId}/request`}
       className="transition-shadow hover:shadow-lg hover:ring-2 hover:ring-blue-500"
@@ -48,6 +44,7 @@ export default function WishlistToggleButton({
         cursor: "pointer",
         fontWeight: 600,
         textDecoration: "none",
+        marginTop: "8px",
       }}
     >
       Add to Wishlist
