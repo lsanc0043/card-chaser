@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import ModalWrapper from "@/components/modal-wrapper";
-import CloseModalButton from "@/components/close-modal-button";
+import ModalWrapper from "@/components/modals/modal-wrapper";
+import CloseModalButton from "@/components/modals/close-modal-button";
 import OfferForm from "@/app/marketplace/[id]/offer-form";
 import Image from "next/image";
 
