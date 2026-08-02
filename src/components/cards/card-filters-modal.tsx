@@ -150,7 +150,6 @@ export default function CardFiltersModal({ basePath }: { basePath: string }) {
               Filter Cards
             </h2>
 
-            {/* TCG */}
             <section>
               <p
                 style={{
@@ -205,7 +204,6 @@ export default function CardFiltersModal({ basePath }: { basePath: string }) {
               }}
             />
 
-            {/* Rarity */}
             <section
               style={{
                 marginTop: "20px",
@@ -266,7 +264,6 @@ export default function CardFiltersModal({ basePath }: { basePath: string }) {
               )}
             </section>
 
-            {/* Actions */}
             <div
               style={{
                 display: "flex",

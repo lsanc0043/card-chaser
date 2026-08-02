@@ -14,7 +14,7 @@ export default async function ProfilePage() {
       clerkId: userId,
     },
     include: {
-      chaseItems: true,
+      wishlistItems: true,
       offers: true,
     },
   });
@@ -42,7 +42,7 @@ export default async function ProfilePage() {
 
       <p>
         Collection:
-        {user.chaseItems.length}
+        {user.wishlistItems.length}
       </p>
 
       <p>

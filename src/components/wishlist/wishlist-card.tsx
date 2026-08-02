@@ -63,7 +63,6 @@ export default function WishlistCard({ item }: WishlistCardProps) {
         flexDirection: "column",
       }}
     >
-      {/* Card Image */}
       <div
         style={{
           height: "260px",

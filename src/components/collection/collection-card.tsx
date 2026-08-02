@@ -47,7 +47,6 @@ export default function CollectionCard({ item }: CollectionCardProps) {
         flexDirection: "column",
       }}
     >
-      {/* Card Image */}
       <div
         style={{
           height: "260px",
