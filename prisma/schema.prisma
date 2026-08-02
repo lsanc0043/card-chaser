@@ -10,13 +10,11 @@ datasource db {
 model Card {
   id String @id @default(uuid())
 
-  // API identifiers
   externalId Int @unique
 
   name String
   type String?
 
-  // API attributes JSON
   attributes Json
   markets    Json?
 
@@ -28,7 +26,8 @@ model Card {
 
   image CardImage?
 
-  chaseItems ChaseItem[]
+  wishlistItems   WishlistItem[]
+  collectionItems CollectionItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -76,42 +75,71 @@ model CardImage {
 }
 
 model User {
-  id          String   @id @default(uuid())
-  clerkId     String   @unique
-  email       String   @unique
-  username    String   @unique
-  displayName String?
-  createdAt   DateTime @default(now())
+  id String @id @default(uuid())
 
-  chaseItems ChaseItem[]
-  offers     Offer[]
+  clerkId     String  @unique
+  email       String  @unique
+  username    String  @unique
+  displayName String?
+
+  wishlistItems   WishlistItem[]
+  collectionItems CollectionItem[]
+
+  offers Offer[]
+
+  createdAt DateTime @default(now())
 }
 
-model ChaseItem {
+model CollectionItem {
   id String @id @default(uuid())
 
   userId String
   cardId String
 
-  status String @default("OPEN")
+  quantity Int     @default(1)
+  locked   Boolean @default(false)
+
+  condition String @default("Unknown")
+
+  purchasePrice Decimal?
+  purchaseDate  DateTime?
+
+  notes String?
 
   user User @relation(fields: [userId], references: [id])
   card Card @relation(fields: [cardId], references: [id])
 
-  request ChaseRequest?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, cardId, condition])
+}
+
+model WishlistItem {
+  id String @id @default(uuid())
+
+  userId String
+  cardId String
+
+  user User @relation(fields: [userId], references: [id])
+  card Card @relation(fields: [cardId], references: [id])
+
+  chaseRequest ChaseRequest?
 
   createdAt DateTime @default(now())
+  status    String   @default("ACTIVE")
 
   @@unique([userId, cardId])
-  @@index([status])
 }
 
 model ChaseRequest {
   id String @id @default(uuid())
 
-  chaseItemId String @unique
+  status String @default("OPEN")
 
-  chaseItem ChaseItem @relation(fields: [chaseItemId], references: [id], onDelete: Cascade)
+  wishlistItemId String @unique
+
+  wishlistItem WishlistItem @relation(fields: [wishlistItemId], references: [id], onDelete: Cascade)
 
   offers Offer[]
 
@@ -136,6 +164,8 @@ model Offer {
 
   sellerId       String
   chaseRequestId String
+
+  quantity Int @default(1)
 
   price     Decimal
   condition String
