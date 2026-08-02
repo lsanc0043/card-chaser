@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createChaseRequest, updateChaseRequest } from "@/actions/chase";
+import { createChaseRequest, updateChaseRequest } from "@/actions/wishlist";
 import { useRouter } from "next/navigation";
 import { cardConditions } from "@/constants/cardConditions";
 

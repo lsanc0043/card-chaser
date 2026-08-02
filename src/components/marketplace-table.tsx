@@ -1,5 +1,6 @@
 "use client";
 
+import { Lock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -43,11 +44,13 @@ type MarketplaceRequest = {
 };
 
 export default function MarketplaceTable({
+  loggedIn,
   requests,
 }: {
+  loggedIn: boolean;
   requests: MarketplaceRequest[];
 }) {
-  const [hovered, setHovered] = useState(false);
+  const [hovered, setHovered] = useState<string | null>(null);
 
   return (
     <div
@@ -85,7 +88,8 @@ export default function MarketplaceTable({
         <tbody>
           {requests.map((item) => {
             const request = item.request;
-            const hasOffer = request.offers.length > 0;
+            const hasOffer = loggedIn ? request.offers.length > 0 : false;
+            const isHovered = hovered === item.id;
             return (
               <tr
                 key={item.id}
@@ -96,21 +100,21 @@ export default function MarketplaceTable({
                 <td style={cellStyle}>
                   <Link
                     href={`/cards/${item.card.id}`}
-                    onMouseEnter={() => setHovered(true)}
-                    onMouseLeave={() => setHovered(false)}
+                    onMouseEnter={() => setHovered(item.id)}
+                    onMouseLeave={() => setHovered(null)}
                     style={{
                       display: "flex",
                       alignItems: "center",
                       gap: "12px",
-                      textDecoration: hovered ? "underline" : "none",
+                      textDecoration: isHovered ? "underline" : "none",
                       textUnderlineOffset: "3px",
-                      color: hovered ? "#2563eb" : "inherit",
+                      color: isHovered ? "#2563eb" : "inherit",
                       borderRadius: "8px",
                       padding: "6px",
                       margin: "-6px",
                       transition:
                         "background-color 150ms ease, color 150ms ease",
-                      backgroundColor: hovered ? "#f3f4f6" : "transparent",
+                      backgroundColor: isHovered ? "#f3f4f6" : "transparent",
                     }}
                   >
                     {item.card.image?.small && (
@@ -122,7 +126,7 @@ export default function MarketplaceTable({
                         style={{
                           borderRadius: "6px",
                           transition: "transform 150ms ease",
-                          transform: hovered ? "scale(1.05)" : "scale(1)",
+                          transform: isHovered ? "scale(1.05)" : "scale(1)",
                         }}
                       />
                     )}
@@ -148,17 +152,53 @@ export default function MarketplaceTable({
                   </Link>
                 </td>
 
-                <td style={cellStyle}>{item.user.displayName}</td>
+                <td
+                  style={{
+                    ...cellStyle,
+                    color: !loggedIn ? "#9ca3af" : "#374151",
+                  }}
+                >
+                  {!loggedIn ? (
+                    <span
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        gap: 5,
+                        alignItems: "center",
+                      }}
+                    >
+                      {"Sign in to view"}
+                      <Lock size={16} />
+                    </span>
+                  ) : (
+                    item.user.displayName
+                  )}
+                </td>
 
                 <td
                   style={{
                     ...cellStyle,
                     fontWeight: 600,
+                    color: !loggedIn ? "#9ca3af" : "#374151",
                   }}
                 >
-                  {request?.useRange
-                    ? `$${request.minPrice} - $${request.maxPrice}`
-                    : `$${request.price}`}
+                  {!loggedIn ? (
+                    <span
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        gap: 5,
+                        alignItems: "center",
+                      }}
+                    >
+                      {"Sign in to view"}
+                      <Lock size={16} />
+                    </span>
+                  ) : request?.useRange ? (
+                    `$${request.minPrice} - $${request.maxPrice}`
+                  ) : (
+                    `$${request.price}`
+                  )}
                 </td>
 
                 <td style={cellStyle}>{request?.conditions.join(", ")}</td>
@@ -170,20 +210,38 @@ export default function MarketplaceTable({
                 </td>
 
                 <td style={cellStyle}>
-                  <Link
-                    href={`/marketplace/${request.id}`}
-                    style={{
-                      background: "#2563eb",
-                      color: "white",
-                      padding: "8px 14px",
-                      borderRadius: "8px",
-                      textDecoration: "none",
-                      fontWeight: 600,
-                      fontSize: "14px",
-                    }}
-                  >
-                    {hasOffer ? "Edit Offer" : "Make Offer"}
-                  </Link>
+                  {loggedIn ? (
+                    <Link
+                      href={`/marketplace/${request.id}`}
+                      style={{
+                        background: "#2563eb",
+                        color: "white",
+                        padding: "8px 14px",
+                        borderRadius: "8px",
+                        textDecoration: "none",
+                        fontWeight: 600,
+                        fontSize: "14px",
+                      }}
+                    >
+                      {hasOffer ? "Edit Offer" : "Make Offer"}
+                    </Link>
+                  ) : (
+                    <span
+                      title="Sign in to make an offer"
+                      style={{
+                        background: "#e5e7eb",
+                        color: "#9ca3af",
+                        padding: "8px 14px",
+                        borderRadius: "8px",
+                        fontWeight: 600,
+                        fontSize: "14px",
+                        cursor: "not-allowed",
+                        display: "inline-block",
+                      }}
+                    >
+                      Sign in to offer
+                    </span>
+                  )}
                 </td>
               </tr>
             );

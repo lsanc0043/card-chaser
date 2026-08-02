@@ -1,16 +1,16 @@
 "use client";
 
-import { removeFromChase } from "@/actions/chase";
+import { removeFromWishlist } from "@/actions/wishlist";
 
 export default function RemoveChaseButton({
-  chaseItemId,
+  wishlistItemId,
   cardId,
 }: {
-  chaseItemId: string;
+  wishlistItemId: string;
   cardId: string;
 }) {
   async function handleRemove() {
-    await removeFromChase(chaseItemId, cardId);
+    await removeFromWishlist(wishlistItemId, cardId);
     window.location.reload();
   }
 

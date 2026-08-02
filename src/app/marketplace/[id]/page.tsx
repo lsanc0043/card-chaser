@@ -14,7 +14,7 @@ export default async function OfferPage({
       id,
     },
     include: {
-      chaseItem: {
+      wishlistItem: {
         include: {
           card: true,
           user: true,
@@ -45,9 +45,9 @@ export default async function OfferPage({
         Make Offer
       </h1>
 
-      <p>Card: {request.chaseItem.card.name}</p>
+      <p>Card: {request.wishlistItem.card.name}</p>
 
-      <p>Requested by: {request.chaseItem.user.username}</p>
+      <p>Requested by: {request.wishlistItem.user.username}</p>
 
       <OfferForm
         chaseRequestId={request.id}

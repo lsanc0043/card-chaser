@@ -1,54 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import AuthRequiredModal from "@/components/auth-required-modal";
 import Link from "next/link";
 
-export default function ChaseToggleButton({
-  userId,
+export default function WishlistToggleButton({
   cardId,
-  chaseItemId,
+  wishlistItemId,
   removeAction,
 }: {
-  userId: string | null;
   cardId: string;
-  chaseItemId?: string;
+  wishlistItemId?: string;
   removeAction: () => Promise<void>;
 }) {
-  const [showModal, setShowModal] = useState(false);
+  const inWishlist = !!wishlistItemId;
 
-  const isInChase = !!chaseItemId;
-
-  if (!userId) {
-    return (
-      <>
-        <button
-          onClick={() => setShowModal(true)}
-          style={{
-            marginTop: "24px",
-            border: "1px solid #2563eb",
-            padding: "10px 18px",
-            borderRadius: "0.75rem",
-            backgroundColor: "#2563eb",
-            color: "white",
-            cursor: "pointer",
-            fontWeight: 600,
-          }}
-        >
-          Add to Chase List
-        </button>
-
-        {showModal && (
-          <AuthRequiredModal
-            redirectUrl={`/cards/${cardId}`}
-            description="You must be signed in to manage your chase list."
-          />
-        )}
-      </>
-    );
-  }
-
-  if (isInChase) {
+  if (inWishlist) {
     return (
       <form action={removeAction}>
         <button
@@ -63,7 +28,7 @@ export default function ChaseToggleButton({
             fontWeight: 600,
           }}
         >
-          Remove from Chase List
+          Remove from Wishlist
         </button>
       </form>
     );
@@ -85,7 +50,7 @@ export default function ChaseToggleButton({
         textDecoration: "none",
       }}
     >
-      Add to Chase List
+      Add to Wishlist
     </Link>
   );
 }

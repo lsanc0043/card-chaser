@@ -5,16 +5,64 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 
-export async function removeFromChase(chaseItemId: string, cardId: string) {
+export async function addToWishlist(cardId: string) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    throw new Error("You must be signed in");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: {
+      clerkId: userId,
+    },
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const existing = await prisma.wishlistItem.findUnique({
+    where: {
+      userId_cardId: {
+        userId: user.id,
+        cardId,
+      },
+    },
+  });
+
+  if (existing) {
+    throw new Error("Already in wishlist");
+  }
+
+  await prisma.wishlistItem.create({
+    data: {
+      userId: user.id,
+      cardId,
+      status: "ACTIVE",
+    },
+  });
+
+  revalidatePath(`/cards/${cardId}`);
+
+  return {
+    success: true,
+  };
+}
+
+export async function removeFromWishlist(
+  wishlistItemId: string,
+  cardId: string,
+) {
   const { userId } = await auth();
 
   if (!userId) {
     redirect("/sign-in");
   }
 
-  await prisma.chaseItem.delete({
+  await prisma.wishlistItem.delete({
     where: {
-      id: chaseItemId,
+      id: wishlistItemId,
     },
   });
 
@@ -84,7 +132,7 @@ export async function createChaseRequest({
     }
   }
 
-  let chaseItem = await prisma.chaseItem.findUnique({
+  let wishlistItem = await prisma.wishlistItem.findUnique({
     where: {
       userId_cardId: {
         userId: user.id,
@@ -92,29 +140,29 @@ export async function createChaseRequest({
       },
     },
     include: {
-      request: true,
+      chaseRequest: true,
     },
   });
 
-  if (!chaseItem) {
-    chaseItem = await prisma.chaseItem.create({
+  if (!wishlistItem) {
+    wishlistItem = await prisma.wishlistItem.create({
       data: {
         userId: user.id,
         cardId,
       },
       include: {
-        request: true,
+        chaseRequest: true,
       },
     });
   }
 
-  if (chaseItem.request) {
-    throw new Error("A request already exists for this card");
+  if (wishlistItem.chaseRequest) {
+    throw new Error("A chase request already exists for this card");
   }
 
   const request = await prisma.chaseRequest.create({
     data: {
-      chaseItemId: chaseItem.id,
+      wishlistItemId: wishlistItem.id,
 
       price: useRange ? null : price,
 
@@ -171,7 +219,7 @@ export async function updateChaseRequest({
       id: requestId,
     },
     include: {
-      chaseItem: true,
+      wishlistItem: true,
     },
   });
 
@@ -186,7 +234,7 @@ export async function updateChaseRequest({
     },
   });
 
-  if (!user || request.chaseItem.userId !== user.id) {
+  if (!user || request.wishlistItem.userId !== user.id) {
     throw new Error("Unauthorized");
   }
 
@@ -204,7 +252,7 @@ export async function updateChaseRequest({
     },
   });
 
-  revalidatePath(`/cards/${request.chaseItem.cardId}/request`);
+  revalidatePath(`/cards/${request.wishlistItem.cardId}/request`);
 
   return {
     success: true,

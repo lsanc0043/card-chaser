@@ -1,27 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import ModalWrapper, { useModalClose } from "./modal-wrapper";
+import CloseModalButton from "./close-modal-button";
 
 export default function AuthRequiredModal({
   redirectUrl,
   description = "You must be signed in to view this page.",
+  onClose,
 }: {
   redirectUrl: string;
   description?: string;
+  onClose?: () => void;
 }) {
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        backgroundColor: "rgba(0,0,0,0.45)",
-        backdropFilter: "blur(8px)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 50,
-      }}
-    >
+    <ModalWrapper>
       <div
         style={{
           backgroundColor: "white",
@@ -32,6 +25,7 @@ export default function AuthRequiredModal({
           boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
         }}
       >
+        <CloseModalButton onClose={onClose ?? useModalClose} />
         <h2
           style={{
             fontSize: "24px",
@@ -82,6 +76,6 @@ export default function AuthRequiredModal({
           </Link>
         </div>
       </div>
-    </div>
+    </ModalWrapper>
   );
 }

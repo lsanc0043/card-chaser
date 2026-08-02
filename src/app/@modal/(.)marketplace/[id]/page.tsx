@@ -17,7 +17,7 @@ export default async function OfferModal({
       id,
     },
     include: {
-      chaseItem: {
+      wishlistItem: {
         include: {
           card: {
             include: {
@@ -36,7 +36,7 @@ export default async function OfferModal({
     notFound();
   }
 
-  const attributes = request.chaseItem.card.attributes as Record<
+  const attributes = request.wishlistItem.card.attributes as Record<
     string,
     string
   >;
@@ -86,10 +86,10 @@ export default async function OfferModal({
               top: 0,
             }}
           >
-            {request.chaseItem.card.image?.medium && (
+            {request.wishlistItem.card.image?.medium && (
               <Image
-                src={request.chaseItem.card.image.medium}
-                alt={request.chaseItem.card.name}
+                src={request.wishlistItem.card.image.medium}
+                alt={request.wishlistItem.card.name}
                 width={320}
                 height={448}
                 style={{
@@ -106,7 +106,7 @@ export default async function OfferModal({
                   marginBottom: "4px",
                 }}
               >
-                {request.chaseItem.card.name}
+                {request.wishlistItem.card.name}
               </h2>
 
               <p
@@ -116,7 +116,7 @@ export default async function OfferModal({
                   marginBottom: "24px",
                 }}
               >
-                {request.chaseItem.card.set?.name} •{" "}
+                {request.wishlistItem.card.set?.name} •{" "}
                 {attributes.Rarity ?? "Unknown"}
               </p>
             </section>
@@ -155,8 +155,8 @@ export default async function OfferModal({
               >
                 <div style={{ color: "#6b7280" }}>Buyer</div>
                 <div>
-                  {request.chaseItem.user.displayName ??
-                    request.chaseItem.user.username}
+                  {request.wishlistItem.user.displayName ??
+                    request.wishlistItem.user.username}
                 </div>
 
                 <div style={{ color: "#6b7280" }}>Price</div>

@@ -1,15 +1,18 @@
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { removeFromChase } from "@/actions/chase";
+import { removeFromWishlist } from "@/actions/wishlist";
 import { auth } from "@clerk/nextjs/server";
-import ChaseToggleButton from "@/components/chase-toggle-button";
 import CloseModalButton from "@/components/close-modal-button";
 import Image from "next/image";
 import TcgplayerButton from "@/components/tcgplayer-button";
 import ModalWrapper from "@/components/modal-wrapper";
-import CardModalTabs from "@/components/cards/card-details-tabs";
+import CardModalTabs from "@/components/cards/card-tabs";
 import { Edit } from "lucide-react";
 import Link from "next/link";
+import CollectionToggleButton from "@/components/collection/collection-toggle-button";
+import WishlistToggleButton from "@/components/wishlist/wishlist-toggle-button";
+import { removeFromCollection } from "@/actions/collection";
+import { mapCardDetails } from "@/lib/cards/mapCardDetails";
 
 export default async function CardModal({
   params,
@@ -34,6 +37,8 @@ export default async function CardModal({
     },
   });
 
+  console.log("card", card);
+
   if (!card) {
     notFound();
   }
@@ -46,14 +51,14 @@ export default async function CardModal({
       })
     : null;
 
-  const chaseItem = user
-    ? await prisma.chaseItem.findFirst({
+  const wishlistItem = user
+    ? await prisma.wishlistItem.findFirst({
         where: {
           userId: user.id,
           cardId: card.id,
         },
         include: {
-          request: {
+          chaseRequest: {
             include: {
               offers: true,
             },
@@ -62,7 +67,19 @@ export default async function CardModal({
       })
     : null;
 
+  const collectionItem = user
+    ? await prisma.collectionItem.findFirst({
+        where: {
+          userId: user.id,
+          cardId: card.id,
+        },
+      })
+    : null;
+
   const attributes = card.attributes as Record<string, string>;
+
+  const details = mapCardDetails(attributes, card.set?.releaseDate);
+
   const markets = card.markets as {
     tcgplayer?: {
       url?: string;
@@ -89,77 +106,60 @@ export default async function CardModal({
           style={{
             fontSize: "20px",
             fontWeight: 600,
-            marginBottom: "8px",
             borderBottom: "1px solid gray",
           }}
         >
           Card Details
         </h2>
-        {attributes.Number && (
-          <p>
-            <strong>Number:</strong> {attributes.Number}
-          </p>
-        )}
 
-        {(attributes["Card Type"] || attributes.HP || attributes.Stage) && (
-          <p>
-            <strong>Type / HP / Stage: </strong>
-            {attributes["Card Type"] || "—"} / {attributes.HP || "—"} /{" "}
-            {attributes.Stage || "—"}
-          </p>
-        )}
-
-        {card.set.releaseDate && (
-          <p>
-            <strong>Release Date: </strong>
-            {new Date(card.set.releaseDate).toLocaleDateString()}
-          </p>
-        )}
-
-        {attributes.CardText && (
+        {details.sections.map((section) => (
           <section
+            key={section.title}
             style={{
-              marginTop: "10px",
+              marginTop: "12px",
             }}
           >
-            <h2
-              style={{
-                fontSize: "20px",
-                fontWeight: 600,
-                marginBottom: "8px",
-                borderBottom: "1px solid gray",
-              }}
-            >
-              Card Text
-            </h2>
+            {section.title && (
+              <h3
+                style={{
+                  fontWeight: 700,
+                  marginBottom: "8px",
+                  borderBottom: "1px solid gray",
+                }}
+              >
+                {section.title}
+              </h3>
+            )}
 
-            <div
-              dangerouslySetInnerHTML={{
-                __html: attributes.CardText,
-              }}
-            />
+            {section.fields.map((field) => (
+              <div key={field.label}>
+                {field.html ? (
+                  <p
+                    dangerouslySetInnerHTML={{
+                      __html: `<strong>${field.label}</strong> ${field.value}`,
+                    }}
+                  />
+                ) : (
+                  <p>
+                    {field.label && <strong>{field.label}: </strong>}
+                    {field.value}
+                  </p>
+                )}
+              </div>
+            ))}
           </section>
-        )}
-
-        {attributes["Attack 1"] && (
-          <p
-            dangerouslySetInnerHTML={{
-              __html: `<strong>Attack 1:</strong> ${attributes["Attack 1"].replace(/\r\n/g, "")}`,
-            }}
-          />
-        )}
-
-        {(attributes.Weakness ||
-          attributes.Resistance ||
-          attributes.RetreatCost) && (
-          <p>
-            <strong>Weakness / Resistance / Retreat Cost: </strong>
-            {attributes.Weakness || "—"} / {attributes.Resistance || "—"} /{" "}
-            {attributes.RetreatCost || "—"}
-          </p>
-        )}
+        ))}
       </section>
+    </div>
+  );
 
+  const marketContent = (
+    <div
+      style={{
+        flex: 1,
+        width: "500px",
+      }}
+    >
       <section
         style={{
           marginTop: "10px",
@@ -278,21 +278,21 @@ export default async function CardModal({
         >
           <tbody>
             {[
-              ["Status", chaseItem?.status],
+              ["Status", wishlistItem?.status],
               [
                 "Created On",
-                chaseItem?.createdAt &&
-                  new Date(chaseItem?.createdAt).toLocaleDateString(),
+                wishlistItem?.createdAt &&
+                  new Date(wishlistItem?.createdAt).toLocaleDateString(),
               ],
               [
                 "Price",
-                chaseItem?.request?.useRange
-                  ? `$${chaseItem.request.minPrice} - ${chaseItem.request.maxPrice}`
-                  : `$${chaseItem?.request?.price}`,
+                wishlistItem?.chaseRequest?.useRange
+                  ? `$${wishlistItem.chaseRequest.minPrice} - ${wishlistItem.chaseRequest.maxPrice}`
+                  : `$${wishlistItem?.chaseRequest?.price}`,
               ],
-              ["Conditions", chaseItem?.request?.conditions.join(", ")],
-              ["Quantity", chaseItem?.request?.quantity],
-              ["# of Offers", chaseItem?.request?.offers.length],
+              ["Conditions", wishlistItem?.chaseRequest?.conditions.join(", ")],
+              ["Quantity", wishlistItem?.chaseRequest?.quantity],
+              ["# of Offers", wishlistItem?.chaseRequest?.offers.length],
             ].map(([label, value]) => (
               <tr key={label as string}>
                 <td
@@ -390,7 +390,7 @@ export default async function CardModal({
         </div>
 
         <CardModalTabs
-          showTabs={fromChase}
+          showRequest={fromChase}
           image={
             card.image?.medium && (
               <Image
@@ -406,6 +406,7 @@ export default async function CardModal({
             )
           }
           details={detailsContent}
+          market={marketContent}
           editRequest={editRequestContent}
         />
 
@@ -417,17 +418,29 @@ export default async function CardModal({
             justifyContent: "flex-end",
             display: "flex",
             width: "100%",
+            gap: 10,
           }}
         >
-          <ChaseToggleButton
-            userId={userId}
+          <CollectionToggleButton
             cardId={card.id}
-            chaseItemId={chaseItem?.id}
+            collectionItemId={collectionItem?.id}
             removeAction={async () => {
               "use server";
 
-              if (chaseItem) {
-                await removeFromChase(chaseItem.id, card.id);
+              if (collectionItem) {
+                await removeFromCollection(collectionItem.id, card.id);
+              }
+            }}
+          />
+
+          <WishlistToggleButton
+            cardId={card.id}
+            wishlistItemId={wishlistItem?.id}
+            removeAction={async () => {
+              "use server";
+
+              if (wishlistItem) {
+                await removeFromWishlist(wishlistItem.id, card.id);
               }
             }}
           />

@@ -3,40 +3,50 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import CardFiltersModal from "./card-filters-modal";
 
-export default function ActiveFilters() {
+export default function ActiveFilters({ basePath }: { basePath: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const tcg = searchParams.get("tcg");
-  const rarity = searchParams.get("rarity");
-  const set = searchParams.get("set");
+  const tcgs = searchParams.get("tcg")?.split(",") ?? [];
+  const rarities = searchParams.get("rarity")?.split(",") ?? [];
+  const sets = searchParams.get("set")?.split(",") ?? [];
 
   const filters = [
-    tcg && {
-      label: tcg === "pokemon" ? "Pokémon" : "One Piece",
+    ...tcgs.map((value) => ({
+      label: value === "pokemon" ? "Pokémon" : "One Piece",
       key: "tcg",
-    },
-    rarity && {
-      label: rarity,
-      key: "rarity",
-    },
-    set && {
-      label: set,
-      key: "set",
-    },
-  ].filter(Boolean) as {
-    label: string;
-    key: string;
-  }[];
+      value,
+    })),
 
-  function removeFilter(key: string) {
+    ...rarities.map((value) => ({
+      label: value,
+      key: "rarity",
+      value,
+    })),
+
+    ...sets.map((value) => ({
+      label: value,
+      key: "set",
+      value,
+    })),
+  ];
+
+  function removeFilter(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
 
-    params.delete(key);
+    const values = params.get(key)?.split(",") ?? [];
+
+    const updated = values.filter((item) => item !== value);
+
+    if (updated.length > 0) {
+      params.set(key, updated.join(","));
+    } else {
+      params.delete(key);
+    }
 
     const query = params.toString();
 
-    router.push(query ? `/browse?${query}` : "/browse");
+    router.push(query ? `/${basePath}?${query}` : `/${basePath}`);
   }
 
   function clearFilters() {
@@ -48,7 +58,7 @@ export default function ActiveFilters() {
 
     const query = params.toString();
 
-    router.push(query ? `/browse?${query}` : "/browse");
+    router.push(query ? `/${basePath}?${query}` : `/${basePath}`);
   }
 
   return (
@@ -71,12 +81,12 @@ export default function ActiveFilters() {
         Filters:
       </span>
 
-      <CardFiltersModal />
+      <CardFiltersModal basePath={basePath} />
 
       {filters.map((filter) => (
         <button
-          key={filter.key}
-          onClick={() => removeFilter(filter.key)}
+          key={`${filter.key}-${filter.value}`}
+          onClick={() => removeFilter(filter.key, filter.value)}
           className="hover:bg-blue-100 transition-colors"
           style={{
             display: "flex",
