@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Show, useClerk, useUser } from "@clerk/nextjs";
+import { Show, useAuth, useClerk, useUser } from "@clerk/nextjs";
 import { useState } from "react";
 import Image from "next/image";
 import { SquareArrowRightExit } from "lucide-react";
 
 export default function Navbar() {
+  const { isSignedIn } = useAuth();
   return (
     <nav
       style={{
@@ -43,6 +44,7 @@ export default function Navbar() {
         >
           <Dropdown
             label="Browse"
+            isSignedIn={isSignedIn}
             items={[
               { label: "Browse All", href: "/browse" },
               { divider: true },
@@ -54,18 +56,40 @@ export default function Navbar() {
 
           <Dropdown
             label="Collection"
+            isSignedIn={isSignedIn}
             items={[
-              { label: "My Collection", href: "/collection" },
-              { label: "My Wishlist", href: "/wishlist" },
-              { label: "My Chase Requests", href: "/requests" },
+              {
+                label: "My Collection",
+                href: "/collection",
+                protected: true,
+                tooltip: "Sign in to manage your collection",
+              },
+              {
+                label: "My Wishlist",
+                href: "/wishlist",
+                protected: true,
+                tooltip: "Sign in to save cards to your wishlist",
+              },
+              {
+                label: "My Chase Requests",
+                href: "/requests",
+                protected: true,
+                tooltip: "Sign in to create and manage chase requests",
+              },
             ]}
           />
 
           <Dropdown
             label="Marketplace"
+            isSignedIn={isSignedIn}
             items={[
               { label: "Browse Chase Requests", href: "/marketplace" },
-              { label: "My Offers", href: "/offers" },
+              {
+                label: "My Offers",
+                href: "/offers",
+                protected: true,
+                tooltip: "Sign in to view your offers",
+              },
             ]}
           />
         </div>
@@ -94,13 +118,17 @@ export default function Navbar() {
 
 function Dropdown({
   label,
+  isSignedIn,
   items,
 }: {
   label: string;
+  isSignedIn?: boolean;
   items: (
     | {
         label: string;
         href: string;
+        protected?: boolean;
+        tooltip?: string;
       }
     | {
         section: string;
@@ -122,11 +150,11 @@ function Dropdown({
         style={{
           background: "none",
           border: "none",
-          cursor: "pointer",
           fontSize: "16px",
           fontWeight: 500,
           padding: "8px",
         }}
+        disabled
       >
         {label} ▾
       </button>
@@ -176,25 +204,14 @@ function Dropdown({
               {item.section}
             </div>
           ) : (
-            <Link
+            <ProtectedLink
               key={item.href}
               href={item.href}
-              className="
-        block
-        hover:bg-gray-100
-        focus:bg-gray-100
-        transition-colors
-      "
-              style={{
-                padding: "10px 12px",
-                borderRadius: "6px",
-                textDecoration: "none",
-                color: "inherit",
-                fontSize: "14px",
-              }}
+              disabled={item.protected && !isSignedIn}
+              tooltip={item.tooltip}
             >
               {item.label}
-            </Link>
+            </ProtectedLink>
           ),
         )}
       </div>
@@ -322,6 +339,81 @@ function ProfileLink({
         fontSize: "14px",
         textDecoration: "none",
         color: "inherit",
+      }}
+    >
+      {children}
+    </Link>
+  );
+}
+
+function ProtectedLink({
+  href,
+  children,
+  disabled,
+  tooltip,
+}: {
+  href: string;
+  children: React.ReactNode;
+  disabled?: boolean;
+  tooltip?: string;
+}) {
+  if (disabled) {
+    return (
+      <div
+        className="group relative"
+        style={{
+          padding: "10px 12px",
+          borderRadius: "6px",
+          color: "#9ca3af",
+          cursor: "not-allowed",
+          fontSize: "14px",
+        }}
+      >
+        {children}
+
+        {tooltip && (
+          <div
+            className="
+              invisible
+              group-hover:visible
+              opacity-0
+              group-hover:opacity-100
+              transition-opacity
+              duration-100
+            "
+            style={{
+              position: "absolute",
+              left: "100%",
+              top: "50%",
+              transform: "translateY(-50%)",
+              marginLeft: "8px",
+              background: "#111827",
+              color: "white",
+              padding: "6px 10px",
+              borderRadius: "6px",
+              fontSize: "12px",
+              whiteSpace: "nowrap",
+              zIndex: 200,
+              pointerEvents: "none",
+            }}
+          >
+            {tooltip}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href={href}
+      className="block hover:bg-gray-100 transition-colors"
+      style={{
+        padding: "10px 12px",
+        borderRadius: "6px",
+        textDecoration: "none",
+        color: "inherit",
+        fontSize: "14px",
       }}
     >
       {children}

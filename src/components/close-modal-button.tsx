@@ -2,12 +2,16 @@
 
 import { useModalClose } from "./modal-wrapper";
 
-export default function CloseModalButton() {
+export default function CloseModalButton({
+  onClose,
+}: {
+  onClose?: () => void;
+}) {
   const closeModal = useModalClose();
 
   return (
     <button
-      onClick={closeModal}
+      onClick={onClose ?? closeModal}
       style={{
         position: "absolute",
         top: "8px",
