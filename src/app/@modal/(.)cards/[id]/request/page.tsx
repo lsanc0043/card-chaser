@@ -41,7 +41,7 @@ export default async function RequestModal({
     notFound();
   }
 
-  const chaseItem = await prisma.chaseItem.findUnique({
+  const wishlistItem = await prisma.wishlistItem.findUnique({
     where: {
       userId_cardId: {
         userId: user.id,
@@ -49,11 +49,11 @@ export default async function RequestModal({
       },
     },
     include: {
-      request: true,
+      chaseRequest: true,
     },
   });
 
-  const request = chaseItem?.request;
+  const request = wishlistItem?.chaseRequest;
 
   const attributes = card.attributes as Record<string, string>;
   const mode = request ? "edit" : "create";
