@@ -4,6 +4,7 @@ import CardDisplay from "@/components/cards/card-display";
 import { buildCardWhere } from "@/lib/cards/buildCardWhere";
 import { getCardFilters } from "@/lib/cards/getCardFilters";
 import prisma from "@/lib/prisma";
+import { CollectionCard } from "@/lib/types";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
@@ -26,25 +27,43 @@ export default async function CollectionPage({
   const filters = await getCardFilters(searchParams);
   const hasFilters = Object.values(filters).some(Boolean);
 
-  const collectionItems =
-    userId &&
-    (await prisma.collectionItem.findMany({
-      where: {
-        user: {
-          clerkId: userId,
-        },
-        card: buildCardWhere(filters),
+  const collectionItems = await prisma.collectionItem.findMany({
+    where: {
+      user: {
+        clerkId: userId,
       },
-      include: {
-        card: {
-          include: {
-            image: true,
-            set: true,
-            tcg: true,
-          },
+      card: buildCardWhere(filters),
+    },
+    include: {
+      card: {
+        include: {
+          image: true,
+          set: true,
+          tcg: true,
         },
       },
-    }));
+    },
+  });
+
+  const groupedCollection = Object.values(
+    collectionItems.reduce(
+      (acc, item) => {
+        const cardId = item.card.id;
+
+        if (!acc[cardId]) {
+          acc[cardId] = {
+            card: item.card,
+            collectionItems: [],
+          };
+        }
+
+        acc[cardId].collectionItems.push(item);
+
+        return acc;
+      },
+      {} as Record<string, CollectionCard>,
+    ),
+  );
 
   return (
     <main
@@ -99,16 +118,13 @@ export default async function CollectionPage({
               justifyContent: "start",
             }}
           >
-            {(collectionItems || []).map((item) => {
+            {groupedCollection.map((item) => {
               return (
                 <CardDisplay
-                  key={item.id}
+                  key={item.card.id}
                   card={item.card}
                   context="collection"
-                  collectionItem={{
-                    quantity: item.quantity,
-                    condition: item.condition,
-                  }}
+                  collectionItems={item.collectionItems}
                 />
               );
             })}
