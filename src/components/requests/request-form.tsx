@@ -18,6 +18,7 @@ type RequestFormProps = {
     conditions: string[];
     quantity: number;
   };
+  onSuccess: () => void;
 };
 
 export default function RequestForm({
@@ -25,6 +26,7 @@ export default function RequestForm({
   requestId,
   mode,
   initialValues,
+  onSuccess,
 }: RequestFormProps) {
   const router = useRouter();
 
@@ -37,6 +39,15 @@ export default function RequestForm({
   );
   const [quantity, setQuantity] = useState(initialValues?.quantity ?? 1);
   const [errors, setErrors] = useState<string[]>([]);
+
+  const hasChanges =
+    price !== (initialValues?.price ?? "") ||
+    useRange !== (initialValues?.useRange ?? false) ||
+    minPrice !== (initialValues?.minPrice ?? "") ||
+    maxPrice !== (initialValues?.maxPrice ?? "") ||
+    quantity !== (initialValues?.quantity ?? 1) ||
+    JSON.stringify([...selectedConditions].sort()) !==
+      JSON.stringify([...(initialValues?.conditions ?? [])].sort());
 
   function toggleCondition(condition: string) {
     setSelectedConditions((current) =>
@@ -108,7 +119,7 @@ export default function RequestForm({
       }
 
       router.refresh();
-      router.back();
+      onSuccess();
     } catch (error) {
       setErrors([
         error instanceof Error ? error.message : "Something went wrong",
@@ -266,13 +277,15 @@ export default function RequestForm({
 
       <button
         onClick={handleSubmit}
+        disabled={mode === "edit" && !hasChanges}
         style={{
           marginTop: "12px",
           padding: "12px",
           borderRadius: "8px",
-          background: "#2563eb",
+          background: mode === "edit" && !hasChanges ? "#9ca3af" : "#2563eb",
           color: "white",
           fontWeight: 600,
+          cursor: mode === "edit" && !hasChanges ? "not-allowed" : "pointer",
         }}
       >
         {`${mode === "edit" ? "Edit" : "Create"} Request`}
