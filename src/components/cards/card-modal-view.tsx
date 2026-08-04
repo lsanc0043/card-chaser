@@ -5,47 +5,47 @@ import CardMarket from "@/components/cards/card-market";
 import CardAction from "@/components/cards/card-actions";
 import CardModalTabs from "@/components/cards/card-tabs";
 
-import { CardContext, CardWithDetails } from "@/lib/cards/types";
+import {
+  CardContext,
+  CardMarkets,
+  CardWithDetails,
+  UserCollectionItem,
+  SerializedWishlistItemWithRequests,
+} from "@/lib/types";
+import CardCollectionDetails from "../collection/card-collection-details";
+import CardWishlistDetails from "../wishlist/card-wishlist-details";
 
 type CardModalViewProps = {
   card: CardWithDetails;
   context: CardContext;
-  wishlistItemId?: string;
-  collectionItemId?: string;
-  showRequest?: boolean;
+  collectionItems: UserCollectionItem[];
+  wishlistItem?: SerializedWishlistItemWithRequests | null;
   requestContent?: React.ReactNode;
 };
 
 export default function CardModalView({
   card,
   context,
-  wishlistItemId,
-  collectionItemId,
-  showRequest = false,
+  collectionItems,
+  wishlistItem,
   requestContent,
 }: CardModalViewProps) {
-  const markets = card.markets as {
-    tcgplayer?: {
-      url?: string;
-      prices?: {
-        low?: number | null;
-        mid?: number | null;
-        high?: number | null;
-        market?: number | null;
-      };
-    };
-  };
+  const markets = card.markets as CardMarkets;
 
   return (
     <>
       <CardHeader card={card} />
 
       <CardModalTabs
-        showRequest={showRequest}
         image={<CardImage src={card.image?.medium} name={card.name} />}
         details={<CardDetails card={card} />}
         market={<CardMarket markets={markets} />}
-        editRequest={requestContent}
+        collection={<CardCollectionDetails collectionItems={collectionItems} />}
+        wishlist={<CardWishlistDetails wishlistItem={wishlistItem} />}
+        request={requestContent}
+        showCollection={context === "collection"}
+        showWishlist={context === "wishlist"}
+        showRequest={context === "requests"}
       />
 
       <div
@@ -59,8 +59,8 @@ export default function CardModalView({
         <CardAction
           cardId={card.id}
           context={context}
-          collectionItemId={collectionItemId}
-          wishlistItemId={wishlistItemId}
+          collectionItems={collectionItems}
+          wishlistItem={wishlistItem}
         />
       </div>
     </>

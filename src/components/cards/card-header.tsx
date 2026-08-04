@@ -1,4 +1,4 @@
-import { CardWithDetails } from "@/lib/cards/types";
+import { CardWithDetails } from "@/lib/types";
 
 export default function CardHeader({ card }: { card: CardWithDetails }) {
   const attributes = card.attributes as Record<string, string>;

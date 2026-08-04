@@ -3,18 +3,25 @@ import CardImage from "./card-image";
 import CardDetails from "./card-details";
 import CardMarket from "./card-market";
 import CardAction from "./card-actions";
-import { CardContext, CardWithDetails } from "@/lib/cards/types";
+import {
+  CardContext,
+  CardWithDetails,
+  UserCollectionItem,
+  SerializedWishlistItemWithRequests,
+} from "@/lib/types";
+import CardCollectionDetails from "../collection/card-collection-details";
+import CardWishlistDetails from "../wishlist/card-wishlist-details";
 
 export default function CardPageView({
   card,
   context,
-  wishlistItemId,
-  collectionItemId,
+  wishlistItem,
+  collectionItems,
 }: {
   card: CardWithDetails;
   context: CardContext;
-  wishlistItemId?: string;
-  collectionItemId?: string;
+  wishlistItem?: SerializedWishlistItemWithRequests | null;
+  collectionItems: UserCollectionItem[];
 }) {
   const markets = card.markets as {
     tcgplayer?: {
@@ -39,16 +46,16 @@ export default function CardPageView({
       <div
         style={{
           display: "flex",
-          flexDirection: "row",
           justifyContent: "space-between",
         }}
       >
         <CardHeader card={card} />
+
         <CardAction
           cardId={card.id}
           context={context}
-          wishlistItemId={wishlistItemId}
-          collectionItemId={collectionItemId}
+          wishlistItem={wishlistItem}
+          collectionItems={collectionItems}
         />
       </div>
 
@@ -64,11 +71,17 @@ export default function CardPageView({
 
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
+            display: "flex",
+            flexDirection: "column",
             gap: "24px",
           }}
         >
+          {collectionItems.length > 0 && (
+            <CardCollectionDetails collectionItems={collectionItems} />
+          )}
+
+          {wishlistItem && <CardWishlistDetails wishlistItem={wishlistItem} />}
+
           <CardDetails card={card} />
 
           <CardMarket markets={markets} />

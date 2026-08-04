@@ -2,25 +2,50 @@
 
 import { useState } from "react";
 
-type Tab = "request" | "details" | "market";
+type Tab = "collection" | "wishlist" | "request" | "details" | "market";
 
 export default function CardModalTabs({
   image,
   details,
   market,
-  editRequest,
+  collection,
+  wishlist,
+  request,
+  showCollection,
+  showWishlist,
   showRequest,
 }: {
   image: React.ReactNode;
   details: React.ReactNode;
   market: React.ReactNode;
-  editRequest: React.ReactNode;
+  collection?: React.ReactNode;
+  wishlist?: React.ReactNode;
+  request?: React.ReactNode;
+  showCollection: boolean;
+  showWishlist: boolean;
   showRequest: boolean;
 }) {
   const tabs: {
     id: Tab;
     label: string;
   }[] = [
+    ...(showCollection
+      ? [
+          {
+            id: "collection" as Tab,
+            label: "Collection",
+          },
+        ]
+      : []),
+    ...(showWishlist
+      ? [
+          {
+            id: "wishlist" as Tab,
+            label: "Wishlist",
+          },
+        ]
+      : []),
+
     ...(showRequest
       ? [
           {
@@ -29,6 +54,7 @@ export default function CardModalTabs({
           },
         ]
       : []),
+
     {
       id: "details",
       label: "Details",
@@ -40,7 +66,13 @@ export default function CardModalTabs({
   ];
 
   const [activeTab, setActiveTab] = useState<Tab>(
-    showRequest ? "request" : "details",
+    showCollection
+      ? "collection"
+      : showWishlist
+        ? "wishlist"
+        : showRequest
+          ? "request"
+          : "details",
   );
 
   const activeIndex = tabs.findIndex((tab) => tab.id === activeTab);
@@ -121,7 +153,10 @@ export default function CardModalTabs({
             minWidth: 0,
           }}
         >
-          {activeTab === "request" && editRequest}
+          {activeTab === "collection" && collection}
+
+          {activeTab === "wishlist" && wishlist}
+          {activeTab === "request" && request}
 
           {activeTab === "details" && details}
 

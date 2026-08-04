@@ -5,7 +5,7 @@ import ModalWrapper from "@/components/modals/modal-wrapper";
 import { getCard } from "@/lib/cards/getCard";
 import { getUserCardState } from "@/lib/cards/getUserCardState";
 import CardModalView from "@/components/cards/card-modal-view";
-import { CardContext } from "@/lib/cards/types";
+import { CardContext } from "@/lib/types";
 
 export default async function CardModal({
   params,
@@ -20,13 +20,11 @@ export default async function CardModal({
 
   const card = await getCard(id);
 
-  console.log("card", card);
-
   if (!card) {
     notFound();
   }
 
-  const { wishlistItem, collectionItem } = await getUserCardState(
+  const { wishlistItem, collectionItems } = await getUserCardState(
     userId,
     card.id,
   );
@@ -52,8 +50,8 @@ export default async function CardModal({
         <CardModalView
           card={card}
           context={context}
-          wishlistItemId={wishlistItem?.id}
-          collectionItemId={collectionItem?.id}
+          wishlistItem={wishlistItem}
+          collectionItems={collectionItems}
         />
       </div>
     </ModalWrapper>
