@@ -41,7 +41,7 @@ export default async function WishlistPage({
           tcg: true,
         },
       },
-      chaseRequest: {
+      chaseRequests: {
         include: {
           offers: true,
         },

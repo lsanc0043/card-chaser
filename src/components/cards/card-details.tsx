@@ -1,5 +1,5 @@
 import { mapCardDetails } from "@/lib/cards/mapCardDetails";
-import { CardWithDetails } from "@/lib/cards/types";
+import { CardWithDetails } from "@/lib/types";
 
 type CardDetailsProps = {
   card: CardWithDetails;

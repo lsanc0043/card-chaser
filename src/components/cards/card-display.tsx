@@ -1,40 +1,42 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { CardContext, CardWithDetails } from "@/lib/cards/types";
+import { CardContext, CardWithDetails, UserCollectionItem } from "@/lib/types";
 
 type CardDisplayProps = {
   card: CardWithDetails;
   context: CardContext;
-  collectionItem?: {
-    quantity: number;
-    condition: string;
-  };
+  collectionItems?: UserCollectionItem[];
 };
 
 export default function CardDisplay({
   card,
   context,
-  collectionItem,
+  collectionItems,
 }: CardDisplayProps) {
   function getContextSpecificDetails() {
     switch (context) {
       case "collection":
+        const totalQuantity =
+          collectionItems?.reduce((total, item) => total + item.quantity, 0) ??
+          0;
         return (
           <div>
-            <p
-              style={{
-                fontWeight: 700,
-                color: "#6b7280",
-                textTransform: "uppercase",
-              }}
-            >
-              {collectionItem?.condition}
-            </p>
+            <div>
+              <p
+                style={{
+                  fontWeight: 700,
+                  color: "#6b7280",
+                  textTransform: "uppercase",
+                }}
+              >
+                {"Collection"}
+              </p>
 
-            <p>
-              Qty: <strong>{collectionItem?.quantity}</strong>
-            </p>
+              <p>
+                Owned: <strong>{totalQuantity}</strong>
+              </p>
+            </div>
           </div>
         );
       default:
