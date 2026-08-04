@@ -62,8 +62,6 @@ export default async function OffersPage({
     },
   });
 
-  console.log(offers);
-
   return (
     <main
       style={{
