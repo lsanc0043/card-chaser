@@ -4,6 +4,7 @@ import ModalWrapper from "@/components/modals/modal-wrapper";
 import CloseModalButton from "@/components/modals/close-modal-button";
 import OfferForm from "@/app/marketplace/[id]/offer-form";
 import Image from "next/image";
+import { formatConditions } from "@/lib/utils";
 
 export default async function OfferModal({
   params,
@@ -167,7 +168,7 @@ export default async function OfferModal({
                 </div>
 
                 <div style={{ color: "#6b7280" }}>Conditions</div>
-                <div>{request.conditions.join(", ")}</div>
+                <div>{formatConditions(request.conditions)}</div>
 
                 <div style={{ color: "#6b7280" }}>Quantity</div>
                 <div>{request.quantity}</div>

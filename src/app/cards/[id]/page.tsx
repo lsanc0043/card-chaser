@@ -3,7 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { getUserCardState } from "@/lib/cards/getUserCardState";
 import CardPageView from "@/components/cards/card-page-view";
 import { getCard } from "@/lib/cards/getCard";
-import { CardContext } from "@/lib/cards/types";
+import { CardContext } from "@/lib/types";
 
 export default async function CardPage({
   params,
@@ -22,10 +22,11 @@ export default async function CardPage({
     notFound();
   }
 
-  const { wishlistItem, collectionItem } = await getUserCardState(
+  const { wishlistItem, collectionItems } = await getUserCardState(
     userId,
     card.id,
   );
+
   return (
     <main
       style={{
@@ -35,8 +36,8 @@ export default async function CardPage({
       <CardPageView
         card={card}
         context={context}
-        wishlistItemId={wishlistItem?.id}
-        collectionItemId={collectionItem?.id}
+        wishlistItem={wishlistItem}
+        collectionItems={collectionItems}
       />
     </main>
   );
