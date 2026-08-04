@@ -124,7 +124,7 @@ model WishlistItem {
   user User @relation(fields: [userId], references: [id])
   card Card @relation(fields: [cardId], references: [id])
 
-  chaseRequest ChaseRequest?
+  chaseRequests ChaseRequest[]
 
   createdAt DateTime @default(now())
   status    String   @default("ACTIVE")
@@ -137,7 +137,7 @@ model ChaseRequest {
 
   status String @default("OPEN")
 
-  wishlistItemId String @unique
+  wishlistItemId String
 
   wishlistItem WishlistItem @relation(fields: [wishlistItemId], references: [id], onDelete: Cascade)
 

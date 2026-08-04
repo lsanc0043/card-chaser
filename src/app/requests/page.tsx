@@ -1,13 +1,13 @@
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import AuthRequiredModal from "@/components/modals/auth-required-modal";
-import CardDisplay from "@/components/cards/card-display";
 import { getCardFilters } from "@/lib/cards/getCardFilters";
 import { buildCardWhere } from "@/lib/cards/buildCardWhere";
 import CardSearch from "@/components/browse/card-search";
 import ActiveFilters from "@/components/browse/active-filters";
+import RequestsTable from "@/components/requests/requests-table";
 
-export default async function ChasePage({
+export default async function RequestsPage({
   searchParams,
 }: {
   searchParams: Promise<{
@@ -68,6 +68,17 @@ export default async function ChasePage({
     },
   });
 
+  const serializedRequests = chaseRequests.map((request) => ({
+    ...request,
+    price: request.price?.toNumber() ?? null,
+    minPrice: request.minPrice?.toNumber() ?? null,
+    maxPrice: request.maxPrice?.toNumber() ?? null,
+    offers: request.offers.map((offer) => ({
+      ...offer,
+      price: offer.price.toNumber(),
+    })),
+  }));
+
   return (
     <main
       style={{
@@ -90,20 +101,20 @@ export default async function ChasePage({
 
       <ActiveFilters basePath="requests" />
 
-      {hasFilters && chaseRequests.length > 0 && (
+      {hasFilters && serializedRequests.length > 0 && (
         <p
           style={{
             color: "#6b7280",
             margin: "5px 5px 10px",
           }}
         >
-          Showing {chaseRequests.length} request
-          {chaseRequests.length !== 1 ? "s" : ""}
+          Showing {serializedRequests.length} request
+          {serializedRequests.length !== 1 ? "s" : ""}
         </p>
       )}
 
       <div>
-        {chaseRequests.length === 0 ? (
+        {serializedRequests.length === 0 ? (
           <p
             style={{
               color: "#6b7280",
@@ -113,24 +124,7 @@ export default async function ChasePage({
             No chase requests found. Try adjusting your search or filters.
           </p>
         ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, 220px)",
-              gap: "24px",
-              justifyContent: "start",
-            }}
-          >
-            {chaseRequests.map((request) => {
-              return (
-                <CardDisplay
-                  key={request.id}
-                  card={request.wishlistItem.card}
-                  context="requests"
-                />
-              );
-            })}
-          </div>
+          <RequestsTable requests={serializedRequests} />
         )}
       </div>
     </main>
