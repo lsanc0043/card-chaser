@@ -1,5 +1,6 @@
 "use client";
 
+import { formatConditions } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -77,7 +78,6 @@ export default function OffersTable({ offers }: { offers: Offer[] }) {
 
         <tbody>
           {offers.map((offer) => {
-            console.log(offer);
             const request = offer.chaseRequest;
             const card = request.wishlistItem.card;
             const attributes = card.attributes as Record<string, string>;
@@ -174,7 +174,7 @@ export default function OffersTable({ offers }: { offers: Offer[] }) {
                 >
                   <div>
                     <span style={{ color: "#6b7280" }}>Requested: </span>
-                    {request.conditions.join(", ")}
+                    {formatConditions(request.conditions)}
                   </div>
                   <div style={{ color: "#2563eb" }}>
                     <span style={{ color: "#6b7280" }}>Offered: </span>

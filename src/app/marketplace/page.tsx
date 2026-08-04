@@ -4,6 +4,10 @@ import MarketplaceTable from "@/components/marketplace/marketplace-table";
 import { buildCardWhere } from "@/lib/cards/buildCardWhere";
 import { getCardFilters } from "@/lib/cards/getCardFilters";
 import prisma from "@/lib/prisma";
+import {
+  MarketplaceChaseRequest,
+  SerializedMarketplaceChaseRequest,
+} from "@/lib/types";
 import { auth } from "@clerk/nextjs/server";
 
 export default async function MarketplacePage({
@@ -31,32 +35,47 @@ export default async function MarketplacePage({
   const filters = await getCardFilters(searchParams);
   const hasFilters = Object.values(filters).some(Boolean);
 
-  const requests = await prisma.chaseRequest.findMany({
-    where: {
-      wishlistItem: {
-        user: {
-          clerkId: {
-            not: user?.clerkId,
-          },
-        },
-        card: buildCardWhere(filters),
-      },
-    },
-    include: {
-      offers: true,
-      wishlistItem: {
-        include: {
-          card: {
-            include: {
-              set: true,
-              image: true,
+  const requests: MarketplaceChaseRequest[] =
+    await prisma.chaseRequest.findMany({
+      where: {
+        wishlistItem: {
+          user: {
+            clerkId: {
+              not: user?.clerkId,
             },
           },
-          user: true,
+          card: buildCardWhere(filters),
         },
       },
-    },
-  });
+      include: {
+        offers: true,
+        wishlistItem: {
+          include: {
+            card: {
+              include: {
+                set: true,
+                image: true,
+              },
+            },
+            user: true,
+          },
+        },
+      },
+    });
+
+  const serializedRequests: SerializedMarketplaceChaseRequest[] = requests.map(
+    (request) => ({
+      ...request,
+      price: request.price?.toNumber() ?? null,
+      minPrice: request.minPrice?.toNumber() ?? null,
+      maxPrice: request.maxPrice?.toNumber() ?? null,
+
+      offers: request.offers.map((offer) => ({
+        ...offer,
+        price: offer.price.toNumber(),
+      })),
+    }),
+  );
 
   return (
     <main
@@ -80,20 +99,20 @@ export default async function MarketplacePage({
 
       <ActiveFilters basePath="marketplace" />
 
-      {hasFilters && requests.length > 0 && (
+      {hasFilters && serializedRequests.length > 0 && (
         <p
           style={{
             color: "#6b7280",
             margin: "5px 5px 10px",
           }}
         >
-          Showing {requests.length} request
-          {requests.length !== 1 ? "s" : ""}
+          Showing {serializedRequests.length} request
+          {serializedRequests.length !== 1 ? "s" : ""}
         </p>
       )}
 
       <div>
-        {requests.length === 0 ? (
+        {serializedRequests.length === 0 ? (
           <p
             style={{
               color: "#6b7280",
@@ -103,60 +122,7 @@ export default async function MarketplacePage({
             No requests found. Try adjusting your search or filters.
           </p>
         ) : (
-          <MarketplaceTable
-            loggedIn={loggedIn}
-            requests={requests.map((request) => ({
-              id: request.id,
-              status: request.status,
-              createdAt: request.createdAt.toISOString(),
-
-              user: {
-                displayName:
-                  request.wishlistItem.user.displayName ??
-                  request.wishlistItem.user.username,
-              },
-
-              card: {
-                id: request.wishlistItem.card.id,
-                name: request.wishlistItem.card.name,
-
-                attributes: {
-                  Rarity:
-                    (
-                      request.wishlistItem.card.attributes as Record<
-                        string,
-                        string
-                      >
-                    )?.Rarity ?? "",
-                },
-
-                set: request.wishlistItem.card.set
-                  ? {
-                      name: request.wishlistItem.card.set.name,
-                    }
-                  : null,
-
-                image: request.wishlistItem.card.image?.small
-                  ? {
-                      small: request.wishlistItem.card.image.small,
-                    }
-                  : null,
-              },
-
-              request: {
-                id: request!.id,
-                price: request.price?.toString() ?? null,
-                minPrice: request.minPrice?.toString() ?? null,
-                maxPrice: request.maxPrice?.toString() ?? null,
-                useRange: request.useRange,
-                conditions: request.conditions,
-                quantity: request.quantity,
-                offers: request.offers.map((offer) => ({
-                  id: offer.id,
-                })),
-              },
-            }))}
-          />
+          <MarketplaceTable loggedIn={loggedIn} requests={serializedRequests} />
         )}
       </div>
     </main>

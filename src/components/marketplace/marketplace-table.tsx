@@ -1,54 +1,18 @@
 "use client";
 
+import { SerializedMarketplaceChaseRequest } from "@/lib/types";
+import { formatConditions } from "@/lib/utils";
 import { Lock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-
-type MarketplaceRequest = {
-  id: string;
-  status: string;
-  createdAt: string;
-
-  user: {
-    displayName: string;
-  };
-
-  card: {
-    id: string;
-    name: string;
-    attributes: {
-      Rarity?: string;
-    };
-    set: {
-      name: string;
-    } | null;
-    image: {
-      small: string | null;
-    } | null;
-  };
-
-  request: {
-    id: string;
-    price: string | null;
-    minPrice: string | null;
-    maxPrice: string | null;
-    useRange: boolean;
-    conditions: string[];
-    quantity: number;
-
-    offers: {
-      id: string;
-    }[];
-  };
-};
 
 export default function MarketplaceTable({
   loggedIn,
   requests,
 }: {
   loggedIn: boolean;
-  requests: MarketplaceRequest[];
+  requests: SerializedMarketplaceChaseRequest[];
 }) {
   const [hovered, setHovered] = useState<string | null>(null);
 
@@ -86,21 +50,24 @@ export default function MarketplaceTable({
         </thead>
 
         <tbody>
-          {requests.map((item) => {
-            const request = item.request;
+          {requests.map((request) => {
             const hasOffer = loggedIn ? request.offers.length > 0 : false;
-            const isHovered = hovered === item.id;
+            const isHovered = hovered === request.id;
+            const attributes = request.wishlistItem.card.attributes as Record<
+              string,
+              string
+            >;
             return (
               <tr
-                key={item.id}
+                key={request.id}
                 style={{
                   borderBottom: "1px solid #e5e7eb",
                 }}
               >
                 <td style={cellStyle}>
                   <Link
-                    href={`/cards/${item.card.id}`}
-                    onMouseEnter={() => setHovered(item.id)}
+                    href={`/cards/${request.wishlistItem.card.id}`}
+                    onMouseEnter={() => setHovered(request.id)}
                     onMouseLeave={() => setHovered(null)}
                     style={{
                       display: "flex",
@@ -117,10 +84,10 @@ export default function MarketplaceTable({
                       backgroundColor: isHovered ? "#f3f4f6" : "transparent",
                     }}
                   >
-                    {item.card.image?.small && (
+                    {request.wishlistItem.card.image?.small && (
                       <Image
-                        src={item.card.image.small}
-                        alt={item.card.name}
+                        src={request.wishlistItem.card.image.small}
+                        alt={request.wishlistItem.card.name}
                         width={50}
                         height={70}
                         style={{
@@ -137,7 +104,7 @@ export default function MarketplaceTable({
                           fontWeight: 600,
                         }}
                       >
-                        {item.card.name}
+                        {request.wishlistItem.card.name}
                       </div>
 
                       <div
@@ -146,7 +113,8 @@ export default function MarketplaceTable({
                           color: "#6b7280",
                         }}
                       >
-                        {item.card.set?.name} | {item.card.attributes.Rarity}
+                        {request.wishlistItem.card.set?.name} |{" "}
+                        {attributes.Rarity}
                       </div>
                     </div>
                   </Link>
@@ -171,7 +139,7 @@ export default function MarketplaceTable({
                       <Lock size={16} />
                     </span>
                   ) : (
-                    item.user.displayName
+                    request.wishlistItem.user.displayName
                   )}
                 </td>
 
@@ -201,12 +169,14 @@ export default function MarketplaceTable({
                   )}
                 </td>
 
-                <td style={cellStyle}>{request?.conditions.join(", ")}</td>
+                <td style={cellStyle}>
+                  {formatConditions(request.conditions)}
+                </td>
 
                 <td style={cellStyle}>{request?.quantity}</td>
 
                 <td style={cellStyle}>
-                  {new Date(item.createdAt).toLocaleDateString()}
+                  {new Date(request.createdAt).toLocaleDateString()}
                 </td>
 
                 <td style={cellStyle}>
