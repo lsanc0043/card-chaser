@@ -1,10 +1,14 @@
 import prisma from "../prisma";
+import { UserCardState } from "../types";
 
-export async function getUserCardState(userId: string | null, cardId: string) {
+export async function getUserCardState(
+  userId: string | null,
+  cardId: string,
+): Promise<UserCardState> {
   if (!userId) {
     return {
+      collectionItems: [],
       wishlistItem: null,
-      collectionItem: null,
     };
   }
 
@@ -16,35 +20,51 @@ export async function getUserCardState(userId: string | null, cardId: string) {
 
   if (!user) {
     return {
+      collectionItems: [],
       wishlistItem: null,
-      collectionItem: null,
     };
   }
 
-  const [wishlistItem, collectionItem] = await Promise.all([
-    prisma.wishlistItem.findFirst({
-      where: {
-        userId: user.id,
-        cardId,
-      },
-      include: {
-        chaseRequest: {
-          include: {
-            offers: true,
-          },
+  const collectionItems = await prisma.collectionItem.findMany({
+    where: {
+      userId: user.id,
+      cardId,
+    },
+  });
+
+  const wishlistItem = await prisma.wishlistItem.findFirst({
+    where: {
+      userId: user.id,
+      cardId,
+      status: "ACTIVE",
+    },
+    include: {
+      chaseRequests: {
+        include: {
+          offers: true,
         },
       },
-    }),
-    prisma.collectionItem.findFirst({
-      where: {
-        userId: user.id,
-        cardId,
-      },
-    }),
-  ]);
+    },
+  });
+
+  const serializedWishlistItem = wishlistItem
+    ? {
+        ...wishlistItem,
+        chaseRequests: wishlistItem.chaseRequests.map((request) => ({
+          ...request,
+          price: request.price?.toNumber() ?? null,
+          minPrice: request.minPrice?.toNumber() ?? null,
+          maxPrice: request.maxPrice?.toNumber() ?? null,
+          offers: request.offers.map((offer) => ({
+            ...offer,
+            price: offer.price.toNumber(),
+          })),
+        })),
+      }
+    : null;
 
   return {
-    wishlistItem,
-    collectionItem,
+    collectionItems,
+    wishlistItem: serializedWishlistItem,
   };
 }
