@@ -1,17 +1,17 @@
 "use client";
 
+import { removeFromWishlist } from "@/actions/wishlist";
+import { SerializedWishlistItemWithRequests } from "@/lib/types";
 import Link from "next/link";
 
 export default function WishlistToggleButton({
   cardId,
-  wishlistItemId,
-  removeAction,
+  wishlistItem,
 }: {
   cardId: string;
-  wishlistItemId?: string;
-  removeAction: () => Promise<void>;
+  wishlistItem?: SerializedWishlistItemWithRequests | null;
 }) {
-  const inWishlist = !!wishlistItemId;
+  const inWishlist = !!wishlistItem;
 
   return inWishlist ? (
     <button
@@ -26,7 +26,9 @@ export default function WishlistToggleButton({
         fontWeight: 600,
         marginTop: "8px",
       }}
-      onClick={removeAction}
+      onClick={async () => {
+        await removeFromWishlist(wishlistItem.id, cardId);
+      }}
     >
       Remove from Wishlist
     </button>

@@ -32,6 +32,23 @@ export async function addToWishlist(cardId: string) {
   });
 
   if (existing) {
+    if (existing.status === "ARCHIVED") {
+      await prisma.wishlistItem.update({
+        where: {
+          id: existing.id,
+        },
+        data: {
+          status: "ACTIVE",
+        },
+      });
+
+      revalidatePath(`/cards/${cardId}`);
+
+      return {
+        success: true,
+      };
+    }
+
     throw new Error("Already in wishlist");
   }
 
@@ -60,9 +77,12 @@ export async function removeFromWishlist(
     redirect("/sign-in");
   }
 
-  await prisma.wishlistItem.delete({
+  await prisma.wishlistItem.update({
     where: {
       id: wishlistItemId,
+    },
+    data: {
+      status: "ARCHIVED",
     },
   });
 
@@ -109,7 +129,6 @@ export async function createChaseRequest({
     throw new Error("User does not exist");
   }
 
-  // Validation
   if (conditions.length === 0) {
     throw new Error("At least one condition is required");
   }
@@ -140,7 +159,7 @@ export async function createChaseRequest({
       },
     },
     include: {
-      chaseRequest: true,
+      chaseRequests: true,
     },
   });
 
@@ -151,29 +170,36 @@ export async function createChaseRequest({
         cardId,
       },
       include: {
-        chaseRequest: true,
+        chaseRequests: true,
       },
     });
   }
 
-  if (wishlistItem.chaseRequest) {
-    throw new Error("A chase request already exists for this card");
+  const duplicate = wishlistItem.chaseRequests.find((request) => {
+    return (
+      request.status === "OPEN" &&
+      (request.price?.toNumber() ?? null) === (price ?? null) &&
+      request.useRange === useRange &&
+      (request.minPrice?.toNumber() ?? null) === (minPrice ?? null) &&
+      (request.maxPrice?.toNumber() ?? null) === (maxPrice ?? null) &&
+      request.quantity === quantity &&
+      JSON.stringify([...request.conditions].sort()) ===
+        JSON.stringify([...conditions].sort())
+    );
+  });
+
+  if (duplicate) {
+    throw new Error("You already have a request with these conditions.");
   }
 
   const request = await prisma.chaseRequest.create({
     data: {
       wishlistItemId: wishlistItem.id,
-
       price: useRange ? null : price,
-
       useRange,
-
       minPrice: useRange ? minPrice : null,
-
       maxPrice: useRange ? maxPrice : null,
-
       conditions,
-
       quantity,
     },
   });
@@ -227,7 +253,6 @@ export async function updateChaseRequest({
     throw new Error("Request not found");
   }
 
-  // Optional ownership check
   const user = await prisma.user.findUnique({
     where: {
       clerkId: userId,
@@ -236,6 +261,32 @@ export async function updateChaseRequest({
 
   if (!user || request.wishlistItem.userId !== user.id) {
     throw new Error("Unauthorized");
+  }
+
+  const existingRequests = await prisma.chaseRequest.findMany({
+    where: {
+      wishlistItemId: request.wishlistItemId,
+      NOT: {
+        id: requestId,
+      },
+    },
+  });
+
+  const duplicate = existingRequests.find((request) => {
+    return (
+      request.status === "OPEN" &&
+      (request.price?.toNumber() ?? null) === (price ?? null) &&
+      request.useRange === useRange &&
+      (request.minPrice?.toNumber() ?? null) === (minPrice ?? null) &&
+      (request.maxPrice?.toNumber() ?? null) === (maxPrice ?? null) &&
+      request.quantity === quantity &&
+      JSON.stringify([...request.conditions].sort()) ===
+        JSON.stringify([...conditions].sort())
+    );
+  });
+
+  if (duplicate) {
+    throw new Error("You already have a request with these conditions.");
   }
 
   const updatedRequest = await prisma.chaseRequest.update({
@@ -258,9 +309,9 @@ export async function updateChaseRequest({
     success: true,
     request: {
       ...updatedRequest,
-      price: request.price?.toNumber() ?? null,
-      minPrice: request.minPrice?.toNumber() ?? null,
-      maxPrice: request.maxPrice?.toNumber() ?? null,
+      price: updatedRequest.price?.toNumber() ?? null,
+      minPrice: updatedRequest.minPrice?.toNumber() ?? null,
+      maxPrice: updatedRequest.maxPrice?.toNumber() ?? null,
     },
   };
 }

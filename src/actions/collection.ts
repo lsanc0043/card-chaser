@@ -1,18 +1,11 @@
 "use server";
 
+import { CONDITIONS } from "@/lib/cards/constants";
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
-const CONDITIONS = [
-  "Near Mint",
-  "Lightly Played",
-  "Moderately Played",
-  "Heavily Played",
-  "Damaged",
-];
-
-export async function addToCollection({
+export async function saveCollection({
   cardId,
   quantities,
 }: {
@@ -82,28 +75,33 @@ export async function addToCollection({
   });
 
   revalidatePath(`/cards/${cardId}`);
+  revalidatePath("/collection");
 }
 
-export async function removeFromCollection(
-  collectionItemId: string,
-  cardId: string,
-) {
+export async function removeFromCollection(cardId: string) {
   const { userId } = await auth();
 
   if (!userId) {
     throw new Error("You must be signed in");
   }
 
-  await prisma.collectionItem.delete({
+  const user = await prisma.user.findUnique({
     where: {
-      id: collectionItemId,
+      clerkId: userId,
+    },
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  await prisma.collectionItem.deleteMany({
+    where: {
+      userId: user.id,
+      cardId,
     },
   });
 
   revalidatePath(`/cards/${cardId}`);
   revalidatePath("/collection");
-
-  return {
-    success: true,
-  };
 }

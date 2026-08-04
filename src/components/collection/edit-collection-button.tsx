@@ -3,9 +3,8 @@
 import { useState } from "react";
 import CollectionModal from "./collection-modal";
 import { UserCollectionItem } from "@/lib/types";
-import { removeFromCollection } from "@/actions/collection";
 
-export default function CollectionToggleButton({
+export default function EditCollectionButton({
   cardId,
   collectionItems,
 }: {
@@ -14,30 +13,19 @@ export default function CollectionToggleButton({
 }) {
   const [showModal, setShowModal] = useState(false);
 
-  const inCollection = collectionItems?.length > 0;
-
-  if (inCollection) {
-    return (
-      <button
-        className="transition-shadow hover:shadow-lg hover:ring-2 hover:ring-red-500"
-        style={{
-          border: "1px solid #dc2626",
-          padding: "10px 18px",
-          borderRadius: "0.75rem",
-          backgroundColor: "#fee2e2",
-          color: "#dc2626",
-          cursor: "pointer",
-          fontWeight: 600,
-          marginTop: "8px",
-        }}
-        onClick={async () => {
-          await removeFromCollection(cardId);
-        }}
-      >
-        Remove from Collection
-      </button>
-    );
-  }
+  const initialQuantities = collectionItems?.reduce(
+    (acc, item) => {
+      acc[item.condition] = item.quantity;
+      return acc;
+    },
+    {
+      "Near Mint": 0,
+      "Lightly Played": 0,
+      "Moderately Played": 0,
+      "Heavily Played": 0,
+      Damaged: 0,
+    } as Record<string, number>,
+  );
 
   return (
     <>
@@ -55,14 +43,15 @@ export default function CollectionToggleButton({
         }}
         onClick={() => setShowModal(true)}
       >
-        Add to Collection
+        Edit Collection
       </button>
 
       {showModal && (
         <CollectionModal
           cardId={cardId}
           onClose={() => setShowModal(false)}
-          mode="add"
+          initialQuantities={initialQuantities}
+          mode="edit"
         />
       )}
     </>

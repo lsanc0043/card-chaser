@@ -1,65 +1,40 @@
-import { removeFromCollection } from "@/actions/collection";
 import CollectionToggleButton from "../collection/collection-toggle-button";
 import WishlistToggleButton from "../wishlist/wishlist-toggle-button";
-import { removeFromWishlist } from "@/actions/wishlist";
-import { CardContext } from "@/lib/cards/types";
+import {
+  CardContext,
+  UserCollectionItem,
+  SerializedWishlistItemWithRequests,
+} from "@/lib/types";
+import EditCollectionButton from "../collection/edit-collection-button";
+import Link from "next/link";
 
 type CardActionProps = {
   context: CardContext;
   cardId: string;
-  collectionItemId?: string;
-  wishlistItemId?: string;
-  requestId?: string;
+  collectionItems: UserCollectionItem[];
+  wishlistItem?: SerializedWishlistItemWithRequests | null;
 };
 
 export default function CardAction({
   context,
   cardId,
-  collectionItemId,
-  wishlistItemId,
+  collectionItems,
+  wishlistItem,
 }: CardActionProps) {
+  const requests = wishlistItem?.chaseRequests ?? [];
   function getActions() {
     switch (context) {
       case "collection":
         return (
           <>
-            <button
-              className="transition-shadow hover:shadow-lg hover:ring-2 hover:ring-blue-500"
-              style={{
-                border: "1px solid #2563eb",
-                padding: "10px 18px",
-                borderRadius: "0.75rem",
-                backgroundColor: "#2563eb",
-                color: "white",
-                cursor: "pointer",
-                fontWeight: 600,
-                marginTop: "8px",
-              }}
-            >
-              Edit Collection Details
-            </button>
-            <CollectionToggleButton
+            <EditCollectionButton
               cardId={cardId}
-              collectionItemId={collectionItemId}
-              removeAction={async () => {
-                "use server";
-
-                if (collectionItemId) {
-                  await removeFromCollection(collectionItemId, cardId);
-                }
-              }}
+              collectionItems={collectionItems}
             />
 
-            <WishlistToggleButton
+            <CollectionToggleButton
               cardId={cardId}
-              wishlistItemId={wishlistItemId}
-              removeAction={async () => {
-                "use server";
-
-                if (wishlistItemId) {
-                  await removeFromWishlist(wishlistItemId, cardId);
-                }
-              }}
+              collectionItems={collectionItems}
             />
           </>
         );
@@ -67,80 +42,34 @@ export default function CardAction({
       case "wishlist":
         return (
           <>
-            <button
-              className="transition-shadow hover:shadow-lg hover:ring-2 hover:ring-red-500"
-              style={{
-                border: "1px solid #dc2626",
-                padding: "10px 18px",
-                borderRadius: "0.75rem",
-                backgroundColor: "#fee2e2",
-                color: "#dc2626",
-                cursor: "pointer",
-                fontWeight: 600,
-                marginTop: "8px",
-              }}
-            >
-              Edit/Create Request
-            </button>
-            <WishlistToggleButton
-              cardId={cardId}
-              wishlistItemId={wishlistItemId}
-              removeAction={async () => {
-                "use server";
+            <WishlistToggleButton cardId={cardId} wishlistItem={wishlistItem} />
 
-                if (wishlistItemId) {
-                  await removeFromWishlist(wishlistItemId, cardId);
-                }
-              }}
-            />
             <CollectionToggleButton
               cardId={cardId}
-              collectionItemId={collectionItemId}
-              removeAction={async () => {
-                "use server";
-
-                if (collectionItemId) {
-                  await removeFromCollection(collectionItemId, cardId);
-                }
-              }}
+              collectionItems={collectionItems}
             />
           </>
         );
 
       case "requests":
         return (
-          <>
-            <button
-              className="transition-shadow hover:shadow-lg hover:ring-2 hover:ring-red-500"
-              style={{
-                border: "1px solid #dc2626",
-                padding: "10px 18px",
-                borderRadius: "0.75rem",
-                backgroundColor: "#fee2e2",
-                color: "#dc2626",
-                cursor: "pointer",
-                fontWeight: 600,
-                marginTop: "8px",
-              }}
-            >
-              Edit Request
-            </button>
-            <button
-              className="transition-shadow hover:shadow-lg hover:ring-2 hover:ring-red-500"
-              style={{
-                border: "1px solid #dc2626",
-                padding: "10px 18px",
-                borderRadius: "0.75rem",
-                backgroundColor: "#fee2e2",
-                color: "#dc2626",
-                cursor: "pointer",
-                fontWeight: 600,
-                marginTop: "8px",
-              }}
-            >
-              Delete Request
-            </button>
-          </>
+          <Link
+            href={`/cards/${cardId}/requests`}
+            style={{
+              border: "1px solid #2563eb",
+              padding: "10px 18px",
+              borderRadius: "0.75rem",
+              backgroundColor: "#2563eb",
+              color: "white",
+              cursor: "pointer",
+              fontWeight: 600,
+              marginTop: "8px",
+            }}
+          >
+            {requests.length > 0
+              ? `View Requests (${requests.length})`
+              : "Create Request"}
+          </Link>
         );
 
       default:
@@ -148,27 +77,10 @@ export default function CardAction({
           <>
             <CollectionToggleButton
               cardId={cardId}
-              collectionItemId={collectionItemId}
-              removeAction={async () => {
-                "use server";
-
-                if (collectionItemId) {
-                  await removeFromCollection(collectionItemId, cardId);
-                }
-              }}
+              collectionItems={collectionItems}
             />
 
-            <WishlistToggleButton
-              cardId={cardId}
-              wishlistItemId={wishlistItemId}
-              removeAction={async () => {
-                "use server";
-
-                if (wishlistItemId) {
-                  await removeFromWishlist(wishlistItemId, cardId);
-                }
-              }}
-            />
+            <WishlistToggleButton cardId={cardId} wishlistItem={wishlistItem} />
           </>
         );
     }
